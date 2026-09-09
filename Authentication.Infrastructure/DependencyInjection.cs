@@ -1,6 +1,7 @@
-﻿using Authentication.Application.Common.Authentication;
+﻿using Authentication.Application.Interfaces.Authentication;
 using Authentication.Infrastructure.Identity;
 using Authentication.Infrastructure.Persistence;
+using Authentication.Infrastructure.Security.RefreshTokens;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -23,6 +24,7 @@ public static class DependencyInjection
             .AddEntityFrameworkStores<AuthenticationDbContext>();
 
         services.AddScoped<ITokenService, JwtTokenService>();
+        services.AddScoped<IRefreshTokenService, RefreshTokenService>();
 
         services.Configure<JwtOptions>(options =>
             configuration.GetSection(JwtOptions.SectionName));
