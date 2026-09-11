@@ -1,3 +1,5 @@
+using Authentication.Application.Common.Results;
+
 namespace Authentication.Application.Interfaces.Identity;
 
 public interface IUserService
@@ -6,7 +8,7 @@ public interface IUserService
         string email,
         CancellationToken cancellationToken = default);
 
-    Task<(bool Succeeded, Guid UserId, IEnumerable<string> Errors)> CreateAsync(
+    Task<Result<Guid>> CreateAsync(
         string firstName,
         string lastName,
         string email,

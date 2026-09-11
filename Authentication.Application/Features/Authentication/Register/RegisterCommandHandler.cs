@@ -1,59 +1,50 @@
+using Authentication.Application.Interfaces.Identity;
 using Authentication.Application.Common.Results;
 using MediatR;
+using Authentication.Application.Common.Messages;
 
 namespace Authentication.Application.Features.Authentication.Register;
 
 public sealed class RegisterCommandHandler
     : IRequestHandler<RegisterCommand, Result<RegisterResponse>>
 {
-    private readonly UserManager<ApplicationUser> _userManager;
+    private readonly IUserService _userService;
 
-    public RegisterCommandHandler(
-        UserManager<ApplicationUser> userManager)
+    public RegisterCommandHandler(IUserService userService)
     {
-        _userManager = userManager;
+        _userService = userService;
     }
 
     public async Task<Result<RegisterResponse>> Handle(
         RegisterCommand request,
         CancellationToken cancellationToken)
     {
-        var existingUser = await _userManager.FindByEmailAsync(
-            request.Email);
+        var exists = await _userService.ExistsByEmailAsync(
+            request.Email,
+            cancellationToken);
 
-        if (existingUser is not null)
+        if (exists)
         {
             return Result<RegisterResponse>.Failure(
-                "User.AlreadyExists",
-                "A user with this email already exists.");
+                UserMessages.AlreadyExists);
         }
 
-        var user = new ApplicationUser
+        var result = await _userService.CreateAsync(
+            request.FirstName,
+            request.LastName,
+            request.Email,
+            request.Password,
+            cancellationToken);
+
+        if (result.IsFailure)
         {
-            UserName = request.Email,
-            Email = request.Email,
-            FirstName = request.FirstName,
-            LastName = request.LastName
-        };
-
-        var result = await _userManager.CreateAsync(
-            user,
-            request.Password);
-
-        if (!result.Succeeded)
-        {
-            var errors = string.Join(
-                ", ",
-                result.Errors.Select(error => error.Description));
-
             return Result<RegisterResponse>.Failure(
-                "User.CreationFailed",
-                errors);
+                UserMessages.AlreadyExists);
         }
 
         return Result<RegisterResponse>.Success(
             new RegisterResponse(
-                user.Id,
-                user.Email!));
+                result.Value,
+                request.Email));
     }
 }

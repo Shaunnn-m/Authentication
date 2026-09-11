@@ -3,8 +3,9 @@ using System.Text;
 using Authentication.Application.Interfaces.Authentication;
 using Authentication.Domain.Entities;
 using Authentication.Infrastructure.Persistence;
+using Microsoft.EntityFrameworkCore;
 
-namespace Authentication.Infrastructure.Security.RefreshTokens;
+namespace Authentication.Infrastructure.Services.RefreshTokens;
 
 public class RefreshTokenService : IRefreshTokenService
 {
@@ -40,19 +41,47 @@ public class RefreshTokenService : IRefreshTokenService
         return token;
     }
 
-    public Task<bool> ValidateAsync(
-        Guid userId,
-        string refreshToken,
-        CancellationToken cancellationToken = default)
+    public async Task<bool> ValidateAsync(
+           Guid userId,
+           string refreshToken,
+           CancellationToken cancellationToken = default)
     {
-        throw new NotImplementedException();
+        var tokenHash = HashToken(refreshToken);
+
+        var storedToken = await _dbContext.RefreshTokens
+            .FirstOrDefaultAsync(
+                token => token.UserId == userId &&
+                          token.TokenHash == tokenHash,
+                cancellationToken);
+
+        return storedToken is not null && storedToken.IsActive;
     }
 
-    public Task RevokeAsync(
+    public async Task RevokeAsync(
         Guid userId,
         string refreshToken,
         CancellationToken cancellationToken = default)
     {
-        throw new NotImplementedException();
+        var tokenHash = HashToken(refreshToken);
+
+        var storedToken = await _dbContext.RefreshTokens
+            .FirstOrDefaultAsync(
+                token => token.UserId == userId &&
+                          token.TokenHash == tokenHash,
+                cancellationToken);
+
+        if (storedToken is null)
+            return;
+
+        storedToken.Revoke();
+
+        await _dbContext.SaveChangesAsync(cancellationToken);
+    }
+
+    private static string HashToken(string token)
+    {
+        return Convert.ToBase64String(
+            SHA256.HashData(
+                Encoding.UTF8.GetBytes(token)));
     }
 }

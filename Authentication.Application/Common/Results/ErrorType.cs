@@ -1,12 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿namespace Authentication.Application.Common.Results;
 
-namespace Authentication.Application.Common.Results
+public enum ErrorType
 {
-    class ErrorType
-    {
-    }
+    Validation,
+    NotFound,
+    Conflict,
+    Unauthorized,
+    Forbidden,
+    Failure
 }

@@ -1,3 +1,5 @@
+using Authentication.Application.Common.Results;
+using Authentication.Application.Common.Messages;
 using Authentication.Application.Interfaces.Identity;
 using Microsoft.AspNetCore.Identity;
 
@@ -14,15 +16,15 @@ public sealed class UserService : IUserService
     }
 
     public async Task<bool> ExistsByEmailAsync(
-        string email,
-        CancellationToken cancellationToken = default)
+       string email,
+       CancellationToken cancellationToken = default)
     {
         var user = await _userManager.FindByEmailAsync(email);
 
         return user is not null;
     }
 
-    public async Task<(bool Succeeded, Guid UserId, IEnumerable<string> Errors)> CreateAsync(
+    public async Task<Result<Guid>> CreateAsync(
         string firstName,
         string lastName,
         string email,
@@ -43,15 +45,14 @@ public sealed class UserService : IUserService
 
         if (!result.Succeeded)
         {
-            return (
-                false,
-                Guid.Empty,
+            var errors = string.Join(
+                ", ",
                 result.Errors.Select(error => error.Description));
+
+            return Result<Guid>.Failure(
+                UserMessages.CreationFailed);
         }
 
-        return (
-            true,
-            user.Id,
-            Enumerable.Empty<string>());
+        return Result<Guid>.Success(user.Id);
     }
 }

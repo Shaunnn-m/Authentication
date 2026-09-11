@@ -21,13 +21,11 @@ public class Result
         return new Result(true, null);
     }
 
-    public static Result Failure(
-        string code,
-        string message)
+    public static Result Failure(ResultError error)
     {
         return new Result(
             false,
-            new ResultError(code, message));
+            error);
     }
 }
 
@@ -54,11 +52,8 @@ public class Result<T> : Result
         return new Result<T>(value);
     }
 
-    public static Result<T> Failure(
-        string code,
-        string message)
+    public static Result<T> Failure(ResultError error)
     {
-        return new Result<T>(
-            new ResultError(code, message));
+        return new Result<T>(error);
     }
 }

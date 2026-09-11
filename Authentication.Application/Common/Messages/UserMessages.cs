@@ -1,12 +1,18 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Authentication.Application.Common.Results;
 
-namespace Authentication.Application.Common.Messages
+namespace Authentication.Application.Common.Messages;
+
+public static class UserMessages
 {
-    class UserMessages
-    {
-    }
+    public static readonly ResultError AlreadyExists =
+        new(
+            "User.AlreadyExists",
+            "A user with this email already exists.",
+            ErrorType.Conflict);
+
+    public static readonly ResultError CreationFailed =
+        new(
+            "User.CreationFailed",
+            "The user could not be created.",
+            ErrorType.Failure);
 }
