@@ -1,7 +1,10 @@
-﻿using Authentication.Application.Interfaces.Authentication;
+﻿using Authentication.Application.Common.Authentication;
+using Authentication.Application.Interfaces.Authentication;
+using Authentication.Application.Interfaces.Email;
 using Authentication.Application.Interfaces.Identity;
 using Authentication.Infrastructure.Identity;
 using Authentication.Infrastructure.Persistence;
+using Authentication.Infrastructure.Services.Email;
 using Authentication.Infrastructure.Services.Identity;
 using Authentication.Infrastructure.Services.RefreshTokens;
 using Microsoft.AspNetCore.Identity;
@@ -31,15 +34,23 @@ public static class DependencyInjection
 
             options.User.RequireUniqueEmail = true;
         })
-            .AddRoles<IdentityRole<Guid>>()
-            .AddEntityFrameworkStores<AuthenticationDbContext>();
+        .AddRoles<IdentityRole<Guid>>()
+        .AddEntityFrameworkStores<AuthenticationDbContext>()
+        .AddDefaultTokenProviders();
 
         services.AddScoped<ITokenService, JwtTokenService>();
         services.AddScoped<IRefreshTokenService, RefreshTokenService>();
         services.AddScoped<IUserService, UserService>();
+        services.AddScoped<IConfirmationLinkService, ConfirmationLinkService>();
+        services.AddScoped<IEmailConfirmationService, EmailConfirmationService>();
+        services.AddScoped<IEmailService, LoggingEmailService>();
+        services.AddScoped<IEmailTemplateService, EmailTemplateService>();
 
         services.Configure<JwtOptions>(options =>
             configuration.GetSection(JwtOptions.SectionName));
+
+        services.Configure<EmailConfirmationOptions>(options =>
+            configuration.GetSection(EmailConfirmationOptions.SectionName));
 
         return services;
     }

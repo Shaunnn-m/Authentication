@@ -1,3 +1,5 @@
+using Authentication.Application.Abstractions.Results;
+
 namespace Authentication.Application.Common.Results;
 
 public class Result

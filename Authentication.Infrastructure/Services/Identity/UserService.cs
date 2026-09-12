@@ -55,4 +55,67 @@ public sealed class UserService : IUserService
 
         return Result<Guid>.Success(user.Id);
     }
+
+    public async Task<Result<string>> GenerateEmailConfirmationTokenAsync(
+    Guid userId,
+    CancellationToken cancellationToken = default)
+    {
+        var user = await _userManager.FindByIdAsync(userId.ToString());
+
+        if (user is null)
+        {
+            return Result<string>.Failure(
+                UserMessages.NotFound);
+        }
+
+        var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+        Console.WriteLine($"Token length received: {token.Length}");
+        Console.WriteLine($"Token contains spaces: {token.Contains(' ')}");
+        Console.WriteLine($"Token contains '+': {token.Contains('+')}");
+        Console.WriteLine($"Token contains '/': {token.Contains('/')}");
+        Console.WriteLine($"Token contains '=': {token.Contains('=')}");
+
+        return Result<string>.Success(token);
+    }
+
+    public async Task<Result<string>> ConfirmEmailAsync(
+    Guid userId,
+    string token,
+    CancellationToken cancellationToken = default)
+    {
+        var user = await _userManager.FindByIdAsync(
+            userId.ToString());
+
+        if (user is null)
+        {
+            return Result<string>.Failure(
+                UserMessages.NotFound);
+        }
+
+        Console.WriteLine($"Token length received: {token.Length}");
+        Console.WriteLine($"Token contains spaces: {token.Contains(' ')}");
+        Console.WriteLine($"Token contains '+': {token.Contains('+')}");
+        Console.WriteLine($"Token contains '/': {token.Contains('/')}");
+        Console.WriteLine($"Token contains '=': {token.Contains('=')}");
+
+        var result = await _userManager.ConfirmEmailAsync(
+            user,
+            token);
+
+        if (!result.Succeeded)
+        {
+            var errors = string.Join(
+                ", ",
+                result.Errors.Select(error => error.Description));
+
+            return Result<string>.Failure(
+                UserMessages.EmailConfirmationFailed with
+                {
+                    Message = errors
+                });
+        }
+
+        return Result<string>.Success(
+            "Email confirmed successfully.");
+    }
 }

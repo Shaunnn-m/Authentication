@@ -14,4 +14,13 @@ public interface IUserService
         string email,
         string password,
         CancellationToken cancellationToken = default);
+
+    Task<Result<string>> GenerateEmailConfirmationTokenAsync(
+        Guid userId,
+        CancellationToken cancellationToken = default);
+
+    Task<Result<string>> ConfirmEmailAsync(
+        Guid userId,
+        string token,
+        CancellationToken cancellationToken = default);
 }
