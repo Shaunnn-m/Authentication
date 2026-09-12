@@ -23,4 +23,12 @@ public interface IUserService
         Guid userId,
         string token,
         CancellationToken cancellationToken = default);
+
+    Task<Result<(Guid UserId, string FirstName, string Email)>> GetByEmailAsync(
+        string email,
+        CancellationToken cancellationToken = default);
+
+    Task<Result<bool>> IsEmailConfirmedAsync(
+    Guid userId,
+    CancellationToken cancellationToken = default);
 }

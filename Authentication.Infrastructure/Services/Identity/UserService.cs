@@ -69,11 +69,6 @@ public sealed class UserService : IUserService
         }
 
         var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-        Console.WriteLine($"Token length received: {token.Length}");
-        Console.WriteLine($"Token contains spaces: {token.Contains(' ')}");
-        Console.WriteLine($"Token contains '+': {token.Contains('+')}");
-        Console.WriteLine($"Token contains '/': {token.Contains('/')}");
-        Console.WriteLine($"Token contains '=': {token.Contains('=')}");
 
         return Result<string>.Success(token);
     }
@@ -91,12 +86,6 @@ public sealed class UserService : IUserService
             return Result<string>.Failure(
                 UserMessages.NotFound);
         }
-
-        Console.WriteLine($"Token length received: {token.Length}");
-        Console.WriteLine($"Token contains spaces: {token.Contains(' ')}");
-        Console.WriteLine($"Token contains '+': {token.Contains('+')}");
-        Console.WriteLine($"Token contains '/': {token.Contains('/')}");
-        Console.WriteLine($"Token contains '=': {token.Contains('=')}");
 
         var result = await _userManager.ConfirmEmailAsync(
             user,
@@ -117,5 +106,39 @@ public sealed class UserService : IUserService
 
         return Result<string>.Success(
             "Email confirmed successfully.");
+    }
+
+    public async Task<Result<(Guid UserId, string FirstName, string Email)>>
+    GetByEmailAsync(
+        string email,
+        CancellationToken cancellationToken = default)
+    {
+        var user = await _userManager.FindByEmailAsync(email);
+
+        if (user is null)
+        {
+            return Result<(Guid, string, string)>.Failure(
+                UserMessages.NotFound);
+        }
+
+        return Result<(Guid, string, string)>.Success(
+            (user.Id, user.FirstName, user.Email!));
+    }
+
+    public async Task<Result<bool>> IsEmailConfirmedAsync(
+    Guid userId,
+    CancellationToken cancellationToken = default)
+    {
+        var user = await _userManager.FindByIdAsync(
+            userId.ToString());
+
+        if (user is null)
+        {
+            return Result<bool>.Failure(
+                UserMessages.NotFound);
+        }
+
+        return Result<bool>.Success(
+            user.EmailConfirmed);
     }
 }

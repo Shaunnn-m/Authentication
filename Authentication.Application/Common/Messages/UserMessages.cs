@@ -28,4 +28,10 @@ public static class UserMessages
             "User.EmailConfirmationFailed",
             "The email confirmation token is invalid or has expired.",
             ErrorType.Validation);
+
+    public static readonly ResultError EmailAlreadyConfirmed =
+        new(
+            "User.EmailAlreadyConfirmed",
+            "The email address has already been confirmed.",
+            ErrorType.Validation);
 }
