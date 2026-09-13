@@ -31,4 +31,17 @@ public interface IUserService
     Task<Result<bool>> IsEmailConfirmedAsync(
     Guid userId,
     CancellationToken cancellationToken = default);
+
+    Task<Result<Guid>> ValidateCredentialsAsync(
+    string email,
+    string password,
+    CancellationToken cancellationToken = default);
+
+    Task<Result<bool>> IsActiveAsync(
+    Guid userId,
+    CancellationToken cancellationToken = default);
+
+    Task<Result<IReadOnlyList<string>>> GetRolesAsync(
+    Guid userId,
+    CancellationToken cancellationToken = default);
 }

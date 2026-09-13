@@ -1,5 +1,6 @@
 ﻿using System.Security.Cryptography;
 using System.Text;
+using Authentication.Application.Common.Results;
 using Authentication.Application.Interfaces.Authentication;
 using Authentication.Domain.Entities;
 using Authentication.Infrastructure.Persistence;
@@ -16,7 +17,7 @@ public class RefreshTokenService : IRefreshTokenService
         _dbContext = dbContext;
     }
 
-    public async Task<string> CreateAsync(
+    public async Task<Result<string>> CreateAsync(
         Guid userId,
         CancellationToken cancellationToken = default)
     {
@@ -38,7 +39,7 @@ public class RefreshTokenService : IRefreshTokenService
 
         await _dbContext.SaveChangesAsync(cancellationToken);
 
-        return token;
+        return Result<string>.Success(token);
     }
 
     public async Task<bool> ValidateAsync(

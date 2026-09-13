@@ -46,11 +46,12 @@ public static class DependencyInjection
         services.AddScoped<IEmailService, LoggingEmailService>();
         services.AddScoped<IEmailTemplateService, EmailTemplateService>();
 
-        services.Configure<JwtOptions>(options =>
+        services.Configure<JwtOptions>(
             configuration.GetSection(JwtOptions.SectionName));
 
-        services.Configure<EmailConfirmationOptions>(options =>
-            configuration.GetSection(EmailConfirmationOptions.SectionName));
+        services.Configure<EmailConfirmationOptions>(
+            configuration.GetSection(
+                EmailConfirmationOptions.SectionName));
 
         return services;
     }

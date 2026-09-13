@@ -1,8 +1,10 @@
-﻿namespace Authentication.Application.Interfaces.Authentication;
+﻿using Authentication.Application.Common.Results;
+
+namespace Authentication.Application.Interfaces.Authentication;
 
 public interface IRefreshTokenService
 {
-    Task<string> CreateAsync(
+    Task<Result<string>> CreateAsync(
         Guid userId,
         CancellationToken cancellationToken = default);
 

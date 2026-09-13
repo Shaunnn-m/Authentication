@@ -141,4 +141,65 @@ public sealed class UserService : IUserService
         return Result<bool>.Success(
             user.EmailConfirmed);
     }
+
+    public async Task<Result<Guid>> ValidateCredentialsAsync(
+    string email,
+    string password,
+    CancellationToken cancellationToken = default)
+    {
+        var user = await _userManager.FindByEmailAsync(email);
+
+        if (user is null)
+        {
+            return Result<Guid>.Failure(
+                UserMessages.InvalidCredentials);
+        }
+
+        var passwordValid = await _userManager.CheckPasswordAsync(
+            user,
+            password);
+
+        if (!passwordValid)
+        {
+            return Result<Guid>.Failure(
+                UserMessages.InvalidCredentials);
+        }
+
+        return Result<Guid>.Success(user.Id);
+    }
+
+    public async Task<Result<bool>> IsActiveAsync(
+    Guid userId,
+    CancellationToken cancellationToken = default)
+    {
+        var user = await _userManager.FindByIdAsync(
+            userId.ToString());
+
+        if (user is null)
+        {
+            return Result<bool>.Failure(
+                UserMessages.NotFound);
+        }
+
+        return Result<bool>.Success(user.IsActive);
+    }
+
+    public async Task<Result<IReadOnlyList<string>>> GetRolesAsync(
+    Guid userId,
+    CancellationToken cancellationToken = default)
+    {
+        var user = await _userManager.FindByIdAsync(
+            userId.ToString());
+
+        if (user is null)
+        {
+            return Result<IReadOnlyList<string>>.Failure(
+                UserMessages.NotFound);
+        }
+
+        var roles = await _userManager.GetRolesAsync(user);
+
+        return Result<IReadOnlyList<string>>.Success(
+            roles.ToList());
+    }
 }

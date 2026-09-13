@@ -34,4 +34,34 @@ public static class UserMessages
             "User.EmailAlreadyConfirmed",
             "The email address has already been confirmed.",
             ErrorType.Validation);
+
+    public static readonly ResultError InvalidCredentials =
+        new(
+            "User.InvalidCredentials",
+            "The email or password is invalid.",
+            ErrorType.Validation);
+
+    public static readonly ResultError AccountInactive =
+        new(
+            "User.AccountInactive",
+            "The user account is inactive.",
+            ErrorType.Forbidden);
+
+    public static readonly ResultError EmailNotConfirmed =
+        new(
+            "User.EmailNotConfirmed",
+            "The email address has not been confirmed.",
+            ErrorType.Forbidden);
+
+    public static readonly ResultError RefreshTokenCreationFailed =
+        new(
+            "User.RefreshTokenCreationFailed",
+            "A refresh token could not be created.",
+            ErrorType.Failure);
+
+    public static readonly ResultError InvalidRefreshToken =
+        new(
+            "User.InvalidRefreshToken",
+            "The refresh token is invalid or expired.",
+            ErrorType.Unauthorized);
 }
