@@ -17,7 +17,7 @@ public class JwtTokenService : ITokenService
         _options = options.Value;
     }
 
-    public string GenerateAccessToken(
+    public AccessTokenResult GenerateAccessToken(
         Guid userId,
         string email,
         IEnumerable<string> roles)
@@ -48,6 +48,8 @@ public class JwtTokenService : ITokenService
                 _options.AccessTokenExpirationMinutes),
             signingCredentials: credentials);
 
-        return new JwtSecurityTokenHandler().WriteToken(token);
+        var tokenString = new JwtSecurityTokenHandler().WriteToken(token);
+
+        return new AccessTokenResult(tokenString, DateTime.UtcNow.AddMinutes(_options.AccessTokenExpirationMinutes));
     }
 }

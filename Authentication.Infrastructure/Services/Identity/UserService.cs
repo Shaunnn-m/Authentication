@@ -202,4 +202,21 @@ public sealed class UserService : IUserService
         return Result<IReadOnlyList<string>>.Success(
             roles.ToList());
     }
+
+    public async Task<Result<(Guid UserId, string FirstName, string Email)>> 
+    GetByIdAsync(
+        Guid userId,
+        CancellationToken cancellationToken = default)
+    {
+        var user = await _userManager.FindByIdAsync(userId.ToString());
+
+        if (user is null)
+        {
+            return Result<(Guid, string, string)>.Failure(
+                UserMessages.NotFound);
+        }
+
+        return Result<(Guid, string, string)>.Success(
+            (user.Id, user.FirstName, user.Email!));
+    }
 }

@@ -93,7 +93,7 @@ public sealed class LoginCommandHandler
         }
 
         // 5. Generate access token
-        var accessToken = _tokenService.GenerateAccessToken(
+        var accessTokenResult = _tokenService.GenerateAccessToken(
             userId,
             request.Email,
             rolesResult.Value ?? Array.Empty<string>());
@@ -112,8 +112,8 @@ public sealed class LoginCommandHandler
 
         return Result<LoginResponse>.Success(
             new LoginResponse(
-                accessToken,
+                accessTokenResult.Token,
                 refreshTokenResult.Value!,
-                DateTime.UtcNow.AddMinutes(15)));
+                accessTokenResult.ExpiresAt));
     }
 }

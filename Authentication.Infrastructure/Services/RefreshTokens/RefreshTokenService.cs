@@ -1,5 +1,6 @@
 ﻿using System.Security.Cryptography;
 using System.Text;
+using Authentication.Application.Common.Messages;
 using Authentication.Application.Common.Results;
 using Authentication.Application.Interfaces.Authentication;
 using Authentication.Domain.Entities;
@@ -42,33 +43,36 @@ public class RefreshTokenService : IRefreshTokenService
         return Result<string>.Success(token);
     }
 
-    public async Task<bool> ValidateAsync(
-           Guid userId,
-           string refreshToken,
-           CancellationToken cancellationToken = default)
+    public async Task<Result<Guid>> ValidateAsync(
+    string refreshToken,
+    CancellationToken cancellationToken = default)
     {
         var tokenHash = HashToken(refreshToken);
 
         var storedToken = await _dbContext.RefreshTokens
             .FirstOrDefaultAsync(
-                token => token.UserId == userId &&
-                          token.TokenHash == tokenHash,
+                token => token.TokenHash == tokenHash,
                 cancellationToken);
 
-        return storedToken is not null && storedToken.IsActive;
+        if (storedToken is null || !storedToken.IsActive)
+        {
+            return Result<Guid>.Failure(
+                UserMessages.InvalidRefreshToken);
+        }
+
+        return Result<Guid>.Success(
+            storedToken.UserId);
     }
 
     public async Task RevokeAsync(
-        Guid userId,
-        string refreshToken,
-        CancellationToken cancellationToken = default)
+    string refreshToken,
+    CancellationToken cancellationToken = default)
     {
         var tokenHash = HashToken(refreshToken);
 
         var storedToken = await _dbContext.RefreshTokens
             .FirstOrDefaultAsync(
-                token => token.UserId == userId &&
-                          token.TokenHash == tokenHash,
+                token => token.TokenHash == tokenHash,
                 cancellationToken);
 
         if (storedToken is null)
@@ -76,7 +80,8 @@ public class RefreshTokenService : IRefreshTokenService
 
         storedToken.Revoke();
 
-        await _dbContext.SaveChangesAsync(cancellationToken);
+        await _dbContext.SaveChangesAsync(
+            cancellationToken);
     }
 
     private static string HashToken(string token)

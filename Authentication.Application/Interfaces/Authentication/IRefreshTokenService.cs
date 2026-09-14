@@ -8,13 +8,11 @@ public interface IRefreshTokenService
         Guid userId,
         CancellationToken cancellationToken = default);
 
-    Task<bool> ValidateAsync(
-        Guid userId,
+    Task<Result<Guid>> ValidateAsync(
         string refreshToken,
         CancellationToken cancellationToken = default);
 
     Task RevokeAsync(
-        Guid userId,
         string refreshToken,
         CancellationToken cancellationToken = default);
 }

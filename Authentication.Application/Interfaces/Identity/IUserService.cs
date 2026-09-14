@@ -28,6 +28,11 @@ public interface IUserService
         string email,
         CancellationToken cancellationToken = default);
 
+    Task<Result<(Guid UserId, string FirstName, string Email)>>
+    GetByIdAsync(
+        Guid userId,
+        CancellationToken cancellationToken = default);
+
     Task<Result<bool>> IsEmailConfirmedAsync(
     Guid userId,
     CancellationToken cancellationToken = default);
