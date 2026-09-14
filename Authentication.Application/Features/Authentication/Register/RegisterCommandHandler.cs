@@ -4,6 +4,7 @@ using MediatR;
 using Authentication.Application.Common.Messages;
 using Authentication.Application.Interfaces.Authentication;
 using Authentication.Application.Interfaces.Email;
+using Authentication.Application.Common.Authorization;
 
 namespace Authentication.Application.Features.Authentication.Register;
 
@@ -44,6 +45,17 @@ public sealed class RegisterCommandHandler
         {
             return Result<RegisterResponse>.Failure(
                 UserMessages.AlreadyExists);
+        }
+
+        var roleResult = await _userService.AddToRoleAsync(
+            result.Value,
+            AppRoles.Customer,
+            cancellationToken);
+
+        if (roleResult.IsFailure)
+        {
+            return Result<RegisterResponse>.Failure(
+                roleResult.Error!);
         }
 
         var confirmationResult =

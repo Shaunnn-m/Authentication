@@ -49,4 +49,9 @@ public interface IUserService
     Task<Result<IReadOnlyList<string>>> GetRolesAsync(
     Guid userId,
     CancellationToken cancellationToken = default);
+
+    Task<Result<bool>> AddToRoleAsync(
+    Guid userId,
+    string role,
+    CancellationToken cancellationToken = default);
 }

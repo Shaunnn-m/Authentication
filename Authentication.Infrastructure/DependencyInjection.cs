@@ -1,4 +1,5 @@
 ﻿using Authentication.Application.Common.Authentication;
+using Authentication.Application.Common.Authorization;
 using Authentication.Application.Interfaces.Authentication;
 using Authentication.Application.Interfaces.Email;
 using Authentication.Application.Interfaces.Identity;
@@ -52,6 +53,10 @@ public static class DependencyInjection
         services.Configure<EmailConfirmationOptions>(
             configuration.GetSection(
                 EmailConfirmationOptions.SectionName));
+
+        services.Configure<InitialAdminOptions>(
+            configuration.GetSection(
+                InitialAdminOptions.SectionName));
 
         return services;
     }

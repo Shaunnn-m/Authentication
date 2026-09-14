@@ -2,6 +2,7 @@ using Authentication.Application.Common.Results;
 using Authentication.Application.Common.Messages;
 using Authentication.Application.Interfaces.Identity;
 using Microsoft.AspNetCore.Identity;
+using Authentication.Application.Abstractions.Results;
 
 namespace Authentication.Infrastructure.Identity;
 
@@ -203,7 +204,7 @@ public sealed class UserService : IUserService
             roles.ToList());
     }
 
-    public async Task<Result<(Guid UserId, string FirstName, string Email)>> 
+    public async Task<Result<(Guid UserId, string FirstName, string Email)>>
     GetByIdAsync(
         Guid userId,
         CancellationToken cancellationToken = default)
@@ -218,5 +219,44 @@ public sealed class UserService : IUserService
 
         return Result<(Guid, string, string)>.Success(
             (user.Id, user.FirstName, user.Email!));
+    }
+
+    public async Task<Result<bool>> AddToRoleAsync(
+    Guid userId,
+    string role,
+    CancellationToken cancellationToken = default)
+    {
+        var user = await _userManager.FindByIdAsync(
+            userId.ToString());
+
+        if (user is null)
+        {
+            return Result<bool>.Failure(
+                UserMessages.NotFound);
+        }
+
+        if (await _userManager.IsInRoleAsync(user, role))
+        {
+            return Result<bool>.Success(true);
+        }
+
+        var result = await _userManager.AddToRoleAsync(
+            user,
+            role);
+
+        if (!result.Succeeded)
+        {
+            var errors = string.Join(
+                ", ",
+                result.Errors.Select(error => error.Description));
+
+            return Result<bool>.Failure(
+                new ResultError(
+                    "User.RoleAssignmentFailed",
+                    errors,
+                    ErrorType.Failure));
+        }
+
+        return Result<bool>.Success(true);
     }
 }
