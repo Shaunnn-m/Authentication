@@ -13,19 +13,19 @@ namespace Authentication.Infrastructure.Services.Email
     {
         private readonly IUserService _userService;
         private readonly IEmailTemplateService _emailTemplateService;
-        private readonly IConfirmationLinkService _confirmationLinkService;
+        private readonly IAuthenticationLinkService _authenticationLinkService;
         private readonly IEmailService _emailService;
-        private readonly EmailConfirmationOptions _options;
+        private readonly AuthenticationEmailOptions _options;
 
         public EmailConfirmationService(
             IUserService userService,
-            IConfirmationLinkService confirmationLinkService,
+            IAuthenticationLinkService authenticationLinkService,
             IEmailService emailService,
             IEmailTemplateService emailTemplateService,
-            IOptions<EmailConfirmationOptions> options)
+            IOptions<AuthenticationEmailOptions> options)
         {
             _userService = userService;
-            _confirmationLinkService = confirmationLinkService;
+            _authenticationLinkService = authenticationLinkService;
             _emailService = emailService;
             _emailTemplateService = emailTemplateService;
             _options = options.Value;
@@ -54,17 +54,17 @@ namespace Authentication.Infrastructure.Services.Email
             }
 
             var confirmationLink =
-                _confirmationLinkService.CreateConfirmationLink(
+                _authenticationLinkService.CreateEmailConfirmationLink(
                     userId,
-                    tokenResult.Value);
+                    tokenResult.Value!);
 
             var confirmationResult = new EmailConfirmationResult(
                 userId,
                 email,
-                tokenResult.Value,
+                tokenResult.Value!,
                 confirmationLink);
 
-            if (_options.Mode == EmailConfirmationMode.AuthenticationService)
+            if (_options.Mode == AuthenticationEmailMode.AuthenticationService)
             {
                 var body = _emailTemplateService
                .RenderRegistrationConfirmation(

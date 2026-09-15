@@ -64,4 +64,10 @@ public static class UserMessages
             "User.InvalidRefreshToken",
             "The refresh token is invalid or expired.",
             ErrorType.Unauthorized);
+
+    public static readonly ResultError PasswordResetRequested =
+    new(
+        "User.PasswordResetRequested",
+        "If an account exists for this email, a password reset link has been sent.",
+        ErrorType.Validation);
 }

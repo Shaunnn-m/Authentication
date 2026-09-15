@@ -259,4 +259,23 @@ public sealed class UserService : IUserService
 
         return Result<bool>.Success(true);
     }
+
+    public async Task<Result<string>> GeneratePasswordResetTokenAsync(
+    Guid userId,
+    CancellationToken cancellationToken = default)
+{
+    var user = await _userManager.FindByIdAsync(
+        userId.ToString());
+
+    if (user is null)
+    {
+        return Result<string>.Failure(
+            UserMessages.NotFound);
+    }
+
+    var token =
+        await _userManager.GeneratePasswordResetTokenAsync(user);
+
+    return Result<string>.Success(token);
+}
 }

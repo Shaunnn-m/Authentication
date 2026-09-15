@@ -42,17 +42,18 @@ public static class DependencyInjection
         services.AddScoped<ITokenService, JwtTokenService>();
         services.AddScoped<IRefreshTokenService, RefreshTokenService>();
         services.AddScoped<IUserService, UserService>();
-        services.AddScoped<IConfirmationLinkService, ConfirmationLinkService>();
+        services.AddScoped<IAuthenticationLinkService, AuthenticationLinkService>();
         services.AddScoped<IEmailConfirmationService, EmailConfirmationService>();
         services.AddScoped<IEmailService, LoggingEmailService>();
         services.AddScoped<IEmailTemplateService, EmailTemplateService>();
+        services.AddScoped<IPasswordResetService, PasswordResetService>();
 
         services.Configure<JwtOptions>(
             configuration.GetSection(JwtOptions.SectionName));
 
-        services.Configure<EmailConfirmationOptions>(
+        services.Configure<AuthenticationEmailOptions>(
             configuration.GetSection(
-                EmailConfirmationOptions.SectionName));
+                AuthenticationEmailOptions.SectionName));
 
         services.Configure<InitialAdminOptions>(
             configuration.GetSection(
