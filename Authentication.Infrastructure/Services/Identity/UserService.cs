@@ -263,19 +263,79 @@ public sealed class UserService : IUserService
     public async Task<Result<string>> GeneratePasswordResetTokenAsync(
     Guid userId,
     CancellationToken cancellationToken = default)
-{
-    var user = await _userManager.FindByIdAsync(
-        userId.ToString());
-
-    if (user is null)
     {
-        return Result<string>.Failure(
-            UserMessages.NotFound);
+        var user = await _userManager.FindByIdAsync(
+            userId.ToString());
+
+        if (user is null)
+        {
+            return Result<string>.Failure(
+                UserMessages.NotFound);
+        }
+
+        var token =
+            await _userManager.GeneratePasswordResetTokenAsync(user);
+
+        return Result<string>.Success(token);
     }
 
-    var token =
-        await _userManager.GeneratePasswordResetTokenAsync(user);
+    public async Task<Result<bool>> ResetPasswordAsync(
+    Guid userId,
+    string token,
+    string newPassword,
+    CancellationToken cancellationToken = default)
+    {
+        var user = await _userManager.FindByIdAsync(
+            userId.ToString());
 
-    return Result<string>.Success(token);
-}
+        if (user is null)
+        {
+            return Result<bool>.Failure(
+                UserMessages.NotFound);
+        }
+
+        var result = await _userManager.ResetPasswordAsync(
+            user,
+            token,
+            newPassword);
+
+        if (!result.Succeeded)
+        {
+            return Result<bool>.Failure(
+                new ResultError(
+                    "Authentication.PasswordResetFailed",
+                    "The password reset token is invalid or has expired.",
+                    ErrorType.Validation));
+        }
+
+        return Result<bool>.Success(true);
+    }
+
+    public async Task<Result<bool>> ChangePasswordAsync(
+        Guid userId,
+        string currentPassword,
+        string newPassword,
+        CancellationToken cancellationToken = default)
+    {
+        var user = await _userManager.FindByIdAsync(userId.ToString());
+
+        if (user is null)
+        {
+            return Result<bool>.Failure(
+                UserMessages.NotFound);
+        }
+
+        var result = await _userManager.ChangePasswordAsync(
+            user,
+            currentPassword,
+            newPassword);
+
+        if (!result.Succeeded)
+        {
+            return Result<bool>.Failure(
+                UserMessages.PasswordChangeFailed);
+        }
+
+        return Result<bool>.Success(true);
+    }
 }

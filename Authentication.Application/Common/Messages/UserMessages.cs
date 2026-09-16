@@ -41,6 +41,12 @@ public static class UserMessages
             "The email or password is invalid.",
             ErrorType.Validation);
 
+    public static readonly ResultError AuthenticationRequired =
+        new(
+            "User.AuthenticationRequired",
+            "Authentication is required.",
+            ErrorType.Unauthorized);
+
     public static readonly ResultError AccountInactive =
         new(
             "User.AccountInactive",
@@ -70,4 +76,9 @@ public static class UserMessages
         "User.PasswordResetRequested",
         "If an account exists for this email, a password reset link has been sent.",
         ErrorType.Validation);
+    public static readonly ResultError PasswordChangeFailed =
+        new(
+            "User.PasswordChangeFailed",
+            "The current password is incorrect or the new password is invalid.",
+            ErrorType.Validation);
 }

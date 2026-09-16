@@ -3,9 +3,16 @@ using Authentication.Application.Common.Results;
 
 namespace Authentication.Application.Interfaces.Authentication;
 
-public interface IPasswordResetService
+public interface IPasswordService
 {
     Task<Result<PasswordResetResult?>> RequestAsync(
         string email,
         CancellationToken cancellationToken = default);
+
+    Task<Result<bool>> ResetAsync(
+        Guid userId,
+        string token,
+        string newPassword,
+        CancellationToken cancellationToken = default);
+
 }

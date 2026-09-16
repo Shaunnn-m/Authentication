@@ -46,7 +46,7 @@ public static class DependencyInjection
         services.AddScoped<IEmailConfirmationService, EmailConfirmationService>();
         services.AddScoped<IEmailService, LoggingEmailService>();
         services.AddScoped<IEmailTemplateService, EmailTemplateService>();
-        services.AddScoped<IPasswordResetService, PasswordResetService>();
+        services.AddScoped<IPasswordService, PasswordService>();
 
         services.Configure<JwtOptions>(
             configuration.GetSection(JwtOptions.SectionName));

@@ -58,4 +58,16 @@ public interface IUserService
     Task<Result<string>> GeneratePasswordResetTokenAsync(
     Guid userId,
     CancellationToken cancellationToken = default);
+
+    Task<Result<bool>> ResetPasswordAsync(
+    Guid userId,
+    string token,
+    string newPassword,
+    CancellationToken cancellationToken = default);
+
+    Task<Result<bool>> ChangePasswordAsync(
+    Guid userId,
+    string currentPassword,
+    string newPassword,
+    CancellationToken cancellationToken = default);
 }

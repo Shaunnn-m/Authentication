@@ -9,12 +9,12 @@ public sealed class ForgotPasswordCommandHandler
         ForgotPasswordCommand,
         Result<ForgotPasswordResponse>>
 {
-    private readonly IPasswordResetService _passwordResetService;
+    private readonly IPasswordService _passwordService;
 
     public ForgotPasswordCommandHandler(
-        IPasswordResetService passwordResetService)
+        IPasswordService passwordService)
     {
-        _passwordResetService = passwordResetService;
+        _passwordService = passwordService;
     }
 
     public async Task<Result<ForgotPasswordResponse>> Handle(
@@ -22,7 +22,7 @@ public sealed class ForgotPasswordCommandHandler
         CancellationToken cancellationToken)
     {
         var result =
-            await _passwordResetService.RequestAsync(
+            await _passwordService.RequestAsync(
                 request.Email,
                 cancellationToken);
 
