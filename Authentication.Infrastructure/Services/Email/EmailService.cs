@@ -19,7 +19,6 @@ namespace Authentication.Infrastructure.Services.Email
         private readonly IUserService _userService;
         private readonly IEmailTemplateService _emailTemplateService;
         private readonly IAuthenticationLinkService _authenticationLinkService;
-        private readonly IEmailService _emailService;
 
         private readonly IRefreshTokenService _refreshTokenService;
         private readonly AuthenticationEmailOptions _options;
@@ -28,7 +27,6 @@ namespace Authentication.Infrastructure.Services.Email
         public EmailService(
             IUserService userService,
             IAuthenticationLinkService authenticationLinkService,
-            IEmailService emailService,
             IEmailTemplateService emailTemplateService,
             IRefreshTokenService refreshTokenService,
             IOptions<AuthenticationEmailOptions> options,
@@ -36,7 +34,6 @@ namespace Authentication.Infrastructure.Services.Email
         {
             _userService = userService;
             _authenticationLinkService = authenticationLinkService;
-            _emailService = emailService;
             _emailTemplateService = emailTemplateService;
             _refreshTokenService = refreshTokenService;
             _options = options.Value;
@@ -107,7 +104,7 @@ namespace Authentication.Infrastructure.Services.Email
                     "Confirm your account",
                     body);
 
-                await _emailService.SendAsync(
+                await SendAsync(
                     emailMessage,
                     cancellationToken);
             }
@@ -177,7 +174,7 @@ namespace Authentication.Infrastructure.Services.Email
                     "Confirm your account",
                     body);
 
-                await _emailService.SendAsync(
+                await SendAsync(
                     emailMessage,
                     cancellationToken);
             }

@@ -1,10 +1,12 @@
 using Authentication.Api.Extentions.Results;
 using Authentication.Application.Features.Authentication.Logout;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Authentication.Api.Controllers.Authentication;
 
+[Authorize]
 [ApiController]
 [Route("api/authentication")]
 public sealed class LogoutController : ControllerBase

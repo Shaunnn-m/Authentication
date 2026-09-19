@@ -30,15 +30,11 @@ public sealed class ChangePasswordCommandHandler
             return Result<ChangePasswordResponse>.Failure(
                 UserMessages.AuthenticationRequired);
         }
-
-        if (request.UserId != _currentUser.UserId.Value)
-        {
-            return Result<ChangePasswordResponse>.Failure(
-                UserMessages.AuthenticationRequired);
-        }
+        
+        var userId = _currentUser.UserId.Value;
 
         var result = await _passwordService.ChangePasswordAsync(
-            request.UserId,
+            userId,
             request.CurrentPassword,
             request.NewPassword,
             cancellationToken);

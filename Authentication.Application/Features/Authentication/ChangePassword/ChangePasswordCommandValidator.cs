@@ -7,8 +7,6 @@ public sealed class ChangePasswordCommandValidator
 {
     public ChangePasswordCommandValidator()
     {
-        RuleFor(x => x.UserId)
-            .NotEmpty();
 
         RuleFor(x => x.CurrentPassword)
             .NotEmpty();

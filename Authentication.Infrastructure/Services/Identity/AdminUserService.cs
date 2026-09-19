@@ -92,10 +92,34 @@ public sealed class AdminUserService : IAdminUserService
     }
 
     public async Task<Result<AdminUserDetails>> GetUserAsync(
-        Guid userId,
+        UserIdentifierType identifierType,
+        string identifier,
         CancellationToken cancellationToken = default)
     {
-        var user = await _userManager.FindByIdAsync(userId.ToString());
+        ApplicationUser? user;
+
+        if (identifierType == UserIdentifierType.Id)
+        {
+            var userId = Guid.Parse(identifier);
+            user = await _userManager.Users
+                .AsNoTracking()
+                .FirstOrDefaultAsync(
+                    user => user.Id == userId,
+                    cancellationToken);
+        }
+        else
+        {
+            var normalizedEmail = identifier
+                .Trim()
+                .ToUpperInvariant();
+
+            user = await _userManager.Users
+                .AsNoTracking()
+                .FirstOrDefaultAsync(
+                    user => user.NormalizedEmail == normalizedEmail,
+                    cancellationToken);
+        }
+
         if (user == null)
         {
             return Result<AdminUserDetails>.Failure(
@@ -106,7 +130,7 @@ public sealed class AdminUserService : IAdminUserService
             from userRole in _dbContext.UserRoles.AsNoTracking()
             join role in _dbContext.Roles.AsNoTracking()
                 on userRole.RoleId equals role.Id
-            where userRole.UserId == userId
+            where userRole.UserId == user.Id
             select role.Name!
             )
             .ToListAsync(cancellationToken);
@@ -121,5 +145,36 @@ public sealed class AdminUserService : IAdminUserService
             roles);
 
         return Result<AdminUserDetails>.Success(userDetails);
+    }
+
+    public async Task<Result<bool>> ActivateAsync(
+        Guid userId,
+        CancellationToken cancellationToken = default)
+    {
+        var user = await _userManager.FindByIdAsync(
+            userId.ToString());
+
+        if (user is null)
+        {
+            return Result<bool>.Failure(
+                UserMessages.NotFound);
+        }
+
+        if (user.IsActive)
+        {
+            return Result<bool>.Success(true);
+        }
+
+        user.IsActive = true;
+        
+        var result = await _userManager.UpdateAsync(user);
+
+        if (!result.Succeeded)
+        {
+            return Result<bool>.Failure(
+                UserMessages.FailedToActivateUser);
+        }
+        
+        return Result<bool>.Success(true);
     }
 }

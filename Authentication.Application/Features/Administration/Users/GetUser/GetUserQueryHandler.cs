@@ -19,7 +19,8 @@ public sealed class GetUserQueryHandler
         CancellationToken cancellationToken)
     {
         var userResult = await _adminUserService.GetUserAsync(
-            request.UserId,
+            request.IdentifierType,
+            request.Identifier,
             cancellationToken);
         
         if (userResult.IsFailure)

@@ -11,6 +11,11 @@ public interface IAdminUserService
         CancellationToken cancellationToken = default);
 
     Task<Result<AdminUserDetails>> GetUserAsync(
+    UserIdentifierType identifierType,
+    string identifier,
+    CancellationToken cancellationToken = default);
+
+    Task<Result<bool>> ActivateAsync(
     Guid userId,
     CancellationToken cancellationToken = default);
 }
