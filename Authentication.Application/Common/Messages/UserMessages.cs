@@ -95,11 +95,11 @@ public static class UserMessages
             "The user profile could not be updated.",
             ErrorType.Failure);
 
-    public static readonly ResultError EmailChangeFailed =
-    new(
-        "User.EmailChangeFailed",
-        "The email address could not be changed.",
-        ErrorType.Validation);
+    public static readonly ResultError DeactivationFailed =
+        new(
+            "User.DeactivationFailed",
+            "Failed to deactivate the user account.",
+            ErrorType.Failure);
 
     public static readonly ResultError EmailAlreadyInUse =
         new(

@@ -4,17 +4,21 @@ using Authentication.Application.Interfaces.Identity;
 using Microsoft.AspNetCore.Identity;
 using Authentication.Application.Abstractions.Results;
 using Authentication.Application.Abstractions.Identity;
+using Authentication.Application.Interfaces.Authentication;
 
 namespace Authentication.Infrastructure.Identity;
 
 public sealed class UserService : IUserService
 {
     private readonly UserManager<ApplicationUser> _userManager;
+    private readonly IRefreshTokenService _refreshTokenService;
 
     public UserService(
-        UserManager<ApplicationUser> userManager)
+        UserManager<ApplicationUser> userManager,
+        IRefreshTokenService refreshTokenService)
     {
         _userManager = userManager;
+        _refreshTokenService = refreshTokenService;
     }
 
     public async Task<bool> ExistsByEmailAsync(
@@ -298,5 +302,37 @@ public sealed class UserService : IUserService
                 user.IsActive,
                 user.EmailConfirmed,
                 roles.ToList()));
+    }
+
+    public async Task<Result<bool>> DeactivateAccountAsync(
+        Guid userId,
+        CancellationToken cancellationToken = default)
+    {
+        var user = await _userManager.FindByIdAsync(
+            userId.ToString());
+
+        if (user is null)
+        {
+            return Result<bool>.Failure(
+                UserMessages.NotFound);
+        }
+
+        if (!user.IsActive)
+        {
+            return Result<bool>.Success(true);
+        }
+
+        user.IsActive = false;
+
+        var result = await _userManager.UpdateAsync(user);
+
+        if (!result.Succeeded)
+        {
+            return Result<bool>.Failure(UserMessages.DeactivationFailed);
+        }
+
+        await _refreshTokenService.RevokeAllAsync(userId, cancellationToken);
+
+        return Result<bool>.Success(true);
     }
 }

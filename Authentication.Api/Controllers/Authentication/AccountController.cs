@@ -1,6 +1,7 @@
 using Authentication.Api.Extentions.Results;
 using Authentication.Application.Features.Authentication.ChangeEmail;
 using Authentication.Application.Features.Authentication.ConfirmEmailChange;
+using Authentication.Application.Features.Authentication.DeactivateAccount;
 using Authentication.Application.Features.Authentication.GetMyAccount;
 using Authentication.Application.Features.Authentication.UpdateMyProfile;
 using MediatR;
@@ -66,6 +67,18 @@ public sealed class AccountController : ControllerBase
     {
         var result = await _sender.Send(
             command,
+            cancellationToken);
+
+        return this.ToActionResult(result);
+    }
+
+    [HttpPost("deactivate")]
+    [Authorize]
+    public async Task<IActionResult> Deactivate(
+        CancellationToken cancellationToken)
+    {
+        var result = await _sender.Send(
+            new DeactivateAccountCommand(),
             cancellationToken);
 
         return this.ToActionResult(result);

@@ -61,5 +61,9 @@ public interface IUserService
     string lastName,
     CancellationToken cancellationToken = default);
 
+    Task<Result<bool>> DeactivateAccountAsync(
+    Guid userId,
+    CancellationToken cancellationToken = default);
+
 
 }
