@@ -1,7 +1,7 @@
 using Authentication.Application.Common.Authorization;
 using FluentValidation;
 
-namespace Authentication.Application.Features.Authorization.AssignRole;
+namespace Authentication.Application.Features.Administration.Users.AssignRole;
 
 public sealed class AssignRoleCommandValidator
     : AbstractValidator<AssignRoleCommand>

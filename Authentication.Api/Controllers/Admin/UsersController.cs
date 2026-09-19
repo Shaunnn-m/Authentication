@@ -1,13 +1,13 @@
 using Authentication.Api.Extentions.Results;
 using Authentication.Application.Common.Authorization;
 using Authentication.Application.Features.Administration.Users.ActivateUser;
+using Authentication.Application.Features.Administration.Users.AssignRole;
 using Authentication.Application.Features.Administration.Users.DeactivateUser;
 using Authentication.Application.Features.Administration.Users.GetUser;
 using Authentication.Application.Features.Administration.Users.GetUsers;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore.Query;
 
 namespace Authentication.Api.Controllers.Admin;
 
@@ -71,4 +71,21 @@ public sealed class UsersController : ControllerBase
         return this.ToActionResult(result);
     }
 
+    [HttpPost("{userId:guid}/roles")]
+    public async Task<IActionResult> AssignRole(
+        Guid userId,
+        [FromBody] AssignRoleCommand command,
+        CancellationToken cancellationToken)
+    {
+        var request = command with
+        {
+            UserId = userId
+        };
+
+        var result = await _sender.Send(
+            request,
+            cancellationToken);
+
+        return this.ToActionResult(result);
+    }
 }

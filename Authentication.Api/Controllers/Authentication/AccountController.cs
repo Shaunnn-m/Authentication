@@ -1,8 +1,10 @@
 using Authentication.Api.Extentions.Results;
 using Authentication.Application.Features.Authentication.ChangeEmail;
+using Authentication.Application.Features.Authentication.ChangePassword;
 using Authentication.Application.Features.Authentication.ConfirmEmailChange;
 using Authentication.Application.Features.Authentication.DeactivateAccount;
 using Authentication.Application.Features.Authentication.GetMyAccount;
+using Authentication.Application.Features.Authentication.ReactivateAccount;
 using Authentication.Application.Features.Authentication.UpdateMyProfile;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -11,8 +13,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace Authentication.Api.Controllers.Authentication;
 
 [ApiController]
-[Route("api/authentication/account")]
-
+[Route("api/account")]
 public sealed class AccountController : ControllerBase
 {
     private readonly ISender _sender;
@@ -38,6 +39,19 @@ public sealed class AccountController : ControllerBase
     [HttpPut]
     public async Task<IActionResult> UpdateProfile(
         [FromBody] UpdateMyProfileCommand command,
+        CancellationToken cancellationToken)
+    {
+        var result = await _sender.Send(
+            command,
+            cancellationToken);
+
+        return this.ToActionResult(result);
+    }
+
+    [Authorize]
+    [HttpPost("change-password")]
+    public async Task<IActionResult> ChangePassword(
+        [FromBody] ChangePasswordCommand command,
         CancellationToken cancellationToken)
     {
         var result = await _sender.Send(
@@ -79,6 +93,18 @@ public sealed class AccountController : ControllerBase
     {
         var result = await _sender.Send(
             new DeactivateAccountCommand(),
+            cancellationToken);
+
+        return this.ToActionResult(result);
+    }
+
+    [HttpPost("reactivate")]
+    public async Task<IActionResult> Reactivate(
+        ReactivateAccountCommand command,
+        CancellationToken cancellationToken)
+    {
+        var result = await _sender.Send(
+            command,
             cancellationToken);
 
         return this.ToActionResult(result);

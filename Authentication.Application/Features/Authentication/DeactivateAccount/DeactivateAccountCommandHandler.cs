@@ -18,33 +18,30 @@ public sealed class DeactivateAccountCommandHandler
         _userService = userService;
         _currentUser = currentUser;
     }
-    public Task<Result<DeactivateAccountResponse>> Handle(
+    public async Task<Result<DeactivateAccountResponse>> Handle(
         DeactivateAccountCommand request,
         CancellationToken cancellationToken)
     {
         var userId = _currentUser.UserId;
 
-        if (userId == null)
+        if (!userId.HasValue)
         {
-            return Task.FromResult(
-                Result<DeactivateAccountResponse>.Failure(
-                    UserMessages.NotFound));
+            return Result<DeactivateAccountResponse>.Failure(
+                UserMessages.NotFound);
         }
 
-        var result = _userService.DeactivateAccountAsync(
+        var result = await _userService.DeactivateAccountAsync(
             userId.Value,
             cancellationToken);
 
-        if (result.IsCompletedSuccessfully && result.Result.IsFailure)
+        if (result.IsFailure)
         {
-            return Task.FromResult(
-                Result<DeactivateAccountResponse>.Failure(
-                    result.Result.Error!));
+            return Result<DeactivateAccountResponse>.Failure(
+                result.Error!);
         }
 
-        return Task.FromResult(
-            Result<DeactivateAccountResponse>.Success(
-                new DeactivateAccountResponse(
-                    "Your account has been deactivated successfully.")));
+        return Result<DeactivateAccountResponse>.Success(
+            new DeactivateAccountResponse(
+                "Your account has been deactivated successfully."));
     }
 }

@@ -335,4 +335,33 @@ public sealed class UserService : IUserService
 
         return Result<bool>.Success(true);
     }
+
+    public async Task<Result<bool>> ReactivateAccountAsync(
+        string email,
+        CancellationToken cancellationToken = default)
+    {
+        var user = await _userManager.FindByEmailAsync(email);
+
+        if (user is null)
+        {
+            return Result<bool>.Failure(
+                UserMessages.NotFound);
+        }
+
+        if (user.IsActive)
+        {
+            return Result<bool>.Success(true);
+        }
+
+        user.IsActive = true;
+
+        var result = await _userManager.UpdateAsync(user);
+
+        if (!result.Succeeded)
+        {
+            return Result<bool>.Failure(UserMessages.ReactivationFailed);
+        }
+
+        return Result<bool>.Success(true);
+    }
 }

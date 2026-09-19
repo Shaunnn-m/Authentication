@@ -2,7 +2,7 @@ using Authentication.Application.Common.Results;
 using Authentication.Application.Interfaces.Identity;
 using MediatR;
 
-namespace Authentication.Application.Features.Authorization.AssignRole;
+namespace Authentication.Application.Features.Administration.Users.AssignRole;
 
 public sealed class AssignRoleCommandHandler
     : IRequestHandler<AssignRoleCommand, Result<AssignRoleResponse>>

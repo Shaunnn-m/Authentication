@@ -1,4 +1,4 @@
-namespace Authentication.Application.Features.Authorization.AssignRole;
+namespace Authentication.Application.Features.Administration.Users.AssignRole;
 
 public sealed record AssignRoleResponse(
     Guid UserId,

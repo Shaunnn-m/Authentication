@@ -91,9 +91,17 @@ public sealed class PasswordService : IPasswordService
             return Result<PasswordResetResult?>.Success(null);
         }
 
+        var token = tokenResult.Value;
+
+        if (string.IsNullOrWhiteSpace(token))
+        {
+            return Result<PasswordResetResult?>.Failure(
+                UserMessages.PasswordResetFailed);
+        }
+
         var resetLink = _linkService.CreatePasswordResetLink(
             userResult.Value.UserId,
-            tokenResult.Value);
+            token);
 
         var result = new PasswordResetResult(
             userResult.Value.UserId,

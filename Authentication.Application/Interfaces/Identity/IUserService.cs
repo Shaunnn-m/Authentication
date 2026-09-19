@@ -65,5 +65,9 @@ public interface IUserService
     Guid userId,
     CancellationToken cancellationToken = default);
 
+    Task<Result<bool>> ReactivateAccountAsync(
+    string email,
+    CancellationToken cancellationToken = default);
+
 
 }
