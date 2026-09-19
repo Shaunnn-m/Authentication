@@ -101,6 +101,12 @@ public static class UserMessages
             "Failed to deactivate the user account.",
             ErrorType.Failure);
 
+    public static readonly ResultError EmailChangeFailed =
+        new(
+            "User.EmailChangeFailed",
+            "The email address could not be changed.",
+            ErrorType.Validation);
+
     public static readonly ResultError EmailAlreadyInUse =
         new(
             "User.EmailAlreadyInUse",
