@@ -19,6 +19,7 @@ public sealed class PasswordService : IPasswordService
     private readonly IEmailService _emailService;
     private readonly IEmailTemplateService _emailTemplateService;
     private readonly AuthenticationEmailOptions _emailOptions;
+    private readonly IRefreshTokenService _refreshTokenService;
     private readonly UserManager<ApplicationUser> _userManager;
 
     public PasswordService(
@@ -27,6 +28,7 @@ public sealed class PasswordService : IPasswordService
         IEmailService emailService,
         IEmailTemplateService emailTemplateService,
         IOptions<AuthenticationEmailOptions> emailOptions,
+        IRefreshTokenService refreshTokenService,
         UserManager<ApplicationUser> userManager)
     {
         _userService = userService;
@@ -34,7 +36,32 @@ public sealed class PasswordService : IPasswordService
         _emailService = emailService;
         _emailTemplateService = emailTemplateService;
         _emailOptions = emailOptions.Value;
+        _refreshTokenService = refreshTokenService;
         _userManager = userManager;
+    }
+
+    public async Task<Result<Guid>> ValidateCredentialsAsync(
+        string email,
+        string password,
+        CancellationToken cancellationToken = default)
+    {
+        var user = await _userManager.FindByEmailAsync(email);
+
+        if (user is null)
+        {
+            return Result<Guid>.Failure(UserMessages.InvalidCredentials);
+        }
+
+        var passwordValid = await _userManager.CheckPasswordAsync(
+            user,
+            password);
+
+        if (!passwordValid)
+        {
+            return Result<Guid>.Failure(UserMessages.InvalidCredentials);
+        }
+
+        return Result<Guid>.Success(user.Id);
     }
 
     public async Task<Result<PasswordResetResult?>> RequestAsync(
@@ -55,7 +82,7 @@ public sealed class PasswordService : IPasswordService
             return Result<PasswordResetResult?>.Success(null);
         }
 
-        var tokenResult = await _userService.GeneratePasswordResetTokenAsync(
+        var tokenResult = await GenerateResetTokenAsync(
             userResult.Value.UserId,
             cancellationToken);
 
@@ -95,17 +122,46 @@ public sealed class PasswordService : IPasswordService
         return Result<PasswordResetResult?>.Success(result);
     }
 
-    public async Task<Result<bool>> ResetAsync(
+    public async Task<Result<string>> GenerateResetTokenAsync(
+        Guid userId,
+        CancellationToken cancellationToken = default)
+    {
+        var user = await _userManager.FindByIdAsync(userId.ToString());
+
+        if (user is null)
+        {
+            return Result<string>.Failure(UserMessages.NotFound);
+        }
+
+        var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+
+        return Result<string>.Success(token);
+    }
+
+    public async Task<Result<bool>> ResetPasswordAsync(
         Guid userId,
         string token,
         string newPassword,
         CancellationToken cancellationToken = default)
     {
-        return await _userService.ResetPasswordAsync(
-            userId,
+        var user = await _userManager.FindByIdAsync(userId.ToString());
+
+        if (user is null)
+        {
+            return Result<bool>.Failure(UserMessages.NotFound);
+        }
+
+        var result = await _userManager.ResetPasswordAsync(
+            user,
             token,
-            newPassword,
-            cancellationToken);
+            newPassword);
+
+        if (!result.Succeeded)
+        {
+            return Result<bool>.Failure(UserMessages.PasswordResetFailed);
+        }
+
+        return Result<bool>.Success(true);
     }
 
     public async Task<Result<bool>> ChangePasswordAsync(
@@ -147,6 +203,8 @@ public sealed class PasswordService : IPasswordService
                     errors,
                     ErrorType.Failure));
         }
+
+        await _refreshTokenService.RevokeAllAsync(userId, cancellationToken);
 
         return Result<bool>.Success(true);
     }

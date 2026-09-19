@@ -1,3 +1,4 @@
+using Authentication.Application.Abstractions.Identity;
 using Authentication.Application.Common.Results;
 
 namespace Authentication.Application.Interfaces.Identity;
@@ -37,11 +38,6 @@ public interface IUserService
     Guid userId,
     CancellationToken cancellationToken = default);
 
-    Task<Result<Guid>> ValidateCredentialsAsync(
-    string email,
-    string password,
-    CancellationToken cancellationToken = default);
-
     Task<Result<bool>> IsActiveAsync(
     Guid userId,
     CancellationToken cancellationToken = default);
@@ -55,19 +51,15 @@ public interface IUserService
     string role,
     CancellationToken cancellationToken = default);
 
-    Task<Result<string>> GeneratePasswordResetTokenAsync(
+    Task<Result<UserAccountDetails>> GetAccountDetailsAsync(
     Guid userId,
     CancellationToken cancellationToken = default);
 
-    Task<Result<bool>> ResetPasswordAsync(
+    Task<Result<UserAccountDetails>> UpdateProfileAsync(
     Guid userId,
-    string token,
-    string newPassword,
+    string firstName,
+    string lastName,
     CancellationToken cancellationToken = default);
 
-    Task<Result<bool>> ChangePasswordAsync(
-    Guid userId,
-    string currentPassword,
-    string newPassword,
-    CancellationToken cancellationToken = default);
+
 }

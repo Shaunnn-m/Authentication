@@ -1,6 +1,7 @@
 using Authentication.Application.Common.Messages;
 using Authentication.Application.Common.Results;
 using Authentication.Application.Interfaces.Authentication;
+using Authentication.Application.Interfaces.Email;
 using Authentication.Application.Interfaces.Identity;
 using MediatR;
 
@@ -11,14 +12,14 @@ public sealed class ResendEmailConfirmationCommandHandler
         ResendEmailConfirmationCommand,
         Result<ResendEmailConfirmationResponse>>
 {
-    private readonly IEmailConfirmationService _emailConfirmationService;
+    private readonly IEmailService _emailService;
     private readonly IUserService _userService;
 
     public ResendEmailConfirmationCommandHandler(
-        IEmailConfirmationService emailConfirmationService,
+        IEmailService emailService,
         IUserService userService)
     {
-        _emailConfirmationService = emailConfirmationService;
+        _emailService = emailService;
         _userService = userService;
     }
 
@@ -56,7 +57,7 @@ public sealed class ResendEmailConfirmationCommandHandler
         }
 
         var confirmationResult =
-            await _emailConfirmationService.HandleAsync(
+            await _emailService.HandleAsync(
                 user.UserId,
                 user.FirstName,
                 user.Email,

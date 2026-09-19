@@ -59,4 +59,28 @@ public sealed class AuthenticationLinkService
                 ["token"] = token
             });
     }
+
+    public string CreateEmailChangeLink(
+    Guid userId,
+    string newEmail,
+    string token)
+    {
+        var baseUrl = _configuration[
+            "Authentication:EmailChangeBaseUrl"];
+
+        if (string.IsNullOrWhiteSpace(baseUrl))
+        {
+            throw new InvalidOperationException(
+                "Authentication email change base URL is not configured.");
+        }
+
+        return QueryHelpers.AddQueryString(
+            baseUrl,
+            new Dictionary<string, string?>
+            {
+                ["userId"] = userId.ToString(),
+                ["newEmail"] = newEmail,
+                ["token"] = token
+            });
+    }
 }

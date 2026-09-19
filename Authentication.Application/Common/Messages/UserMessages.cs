@@ -72,13 +72,38 @@ public static class UserMessages
             ErrorType.Unauthorized);
 
     public static readonly ResultError PasswordResetRequested =
-    new(
-        "User.PasswordResetRequested",
-        "If an account exists for this email, a password reset link has been sent.",
-        ErrorType.Validation);
+        new(
+            "User.PasswordResetRequested",
+            "If an account exists for this email, a password reset link has been sent.",
+            ErrorType.Validation);
+
     public static readonly ResultError PasswordChangeFailed =
         new(
             "User.PasswordChangeFailed",
             "The current password is incorrect or the new password is invalid.",
             ErrorType.Validation);
+
+    public static readonly ResultError PasswordResetFailed =
+        new(
+            "User.PasswordResetFailed",
+            "The password reset token is invalid or has expired.",
+            ErrorType.Validation);
+
+    public static readonly ResultError ProfileUpdateFailed =
+        new(
+            "User.ProfileUpdateFailed",
+            "The user profile could not be updated.",
+            ErrorType.Failure);
+
+    public static readonly ResultError EmailChangeFailed =
+    new(
+        "User.EmailChangeFailed",
+        "The email address could not be changed.",
+        ErrorType.Validation);
+
+    public static readonly ResultError EmailAlreadyInUse =
+        new(
+            "User.EmailAlreadyInUse",
+            "The specified email address is already in use.",
+            ErrorType.Conflict);
 }

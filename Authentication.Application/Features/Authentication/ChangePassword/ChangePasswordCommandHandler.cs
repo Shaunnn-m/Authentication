@@ -1,5 +1,6 @@
 using Authentication.Application.Common.Messages;
 using Authentication.Application.Common.Results;
+using Authentication.Application.Interfaces.Authentication;
 using Authentication.Application.Interfaces.Identity;
 using MediatR;
 
@@ -8,14 +9,14 @@ namespace Authentication.Application.Features.Authentication.ChangePassword;
 public sealed class ChangePasswordCommandHandler
     : IRequestHandler<ChangePasswordCommand, Result<ChangePasswordResponse>>
 {
-    private readonly IUserService _userService;
+    private readonly IPasswordService _passwordService;
     private readonly ICurrentUser _currentUser;
 
     public ChangePasswordCommandHandler(
-        IUserService userService,
+        IPasswordService passwordService,
         ICurrentUser currentUser)
     {
-        _userService = userService;
+        _passwordService = passwordService;
         _currentUser = currentUser;
     }
 
@@ -36,7 +37,7 @@ public sealed class ChangePasswordCommandHandler
                 UserMessages.AuthenticationRequired);
         }
 
-        var result = await _userService.ChangePasswordAsync(
+        var result = await _passwordService.ChangePasswordAsync(
             request.UserId,
             request.CurrentPassword,
             request.NewPassword,

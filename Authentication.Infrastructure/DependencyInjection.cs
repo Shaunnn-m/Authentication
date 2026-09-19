@@ -43,8 +43,7 @@ public static class DependencyInjection
         services.AddScoped<IRefreshTokenService, RefreshTokenService>();
         services.AddScoped<IUserService, UserService>();
         services.AddScoped<IAuthenticationLinkService, AuthenticationLinkService>();
-        services.AddScoped<IEmailConfirmationService, EmailConfirmationService>();
-        services.AddScoped<IEmailService, LoggingEmailService>();
+        services.AddScoped<IEmailService, EmailService>();
         services.AddScoped<IEmailTemplateService, EmailTemplateService>();
         services.AddScoped<IPasswordService, PasswordService>();
 

@@ -84,6 +84,24 @@ public class RefreshTokenService : IRefreshTokenService
             cancellationToken);
     }
 
+    public async Task<Result<bool>> RevokeAllAsync(
+        Guid userId,
+        CancellationToken cancellationToken = default)
+    {
+        var userTokens = await _dbContext.RefreshTokens
+            .Where(token => token.UserId == userId)
+            .ToListAsync(cancellationToken);
+
+        foreach (var token in userTokens)
+        {
+            token.Revoke();
+        }
+
+        await _dbContext.SaveChangesAsync(cancellationToken);
+
+        return Result<bool>.Success(true);
+    }
+
     private static string HashToken(string token)
     {
         return Convert.ToBase64String(

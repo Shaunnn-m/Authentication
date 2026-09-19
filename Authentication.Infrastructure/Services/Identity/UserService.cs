@@ -3,6 +3,7 @@ using Authentication.Application.Common.Messages;
 using Authentication.Application.Interfaces.Identity;
 using Microsoft.AspNetCore.Identity;
 using Authentication.Application.Abstractions.Results;
+using Authentication.Application.Abstractions.Identity;
 
 namespace Authentication.Infrastructure.Identity;
 
@@ -143,32 +144,6 @@ public sealed class UserService : IUserService
             user.EmailConfirmed);
     }
 
-    public async Task<Result<Guid>> ValidateCredentialsAsync(
-    string email,
-    string password,
-    CancellationToken cancellationToken = default)
-    {
-        var user = await _userManager.FindByEmailAsync(email);
-
-        if (user is null)
-        {
-            return Result<Guid>.Failure(
-                UserMessages.InvalidCredentials);
-        }
-
-        var passwordValid = await _userManager.CheckPasswordAsync(
-            user,
-            password);
-
-        if (!passwordValid)
-        {
-            return Result<Guid>.Failure(
-                UserMessages.InvalidCredentials);
-        }
-
-        return Result<Guid>.Success(user.Id);
-    }
-
     public async Task<Result<bool>> IsActiveAsync(
     Guid userId,
     CancellationToken cancellationToken = default)
@@ -260,82 +235,68 @@ public sealed class UserService : IUserService
         return Result<bool>.Success(true);
     }
 
-    public async Task<Result<string>> GeneratePasswordResetTokenAsync(
-    Guid userId,
-    CancellationToken cancellationToken = default)
-    {
-        var user = await _userManager.FindByIdAsync(
-            userId.ToString());
-
-        if (user is null)
-        {
-            return Result<string>.Failure(
-                UserMessages.NotFound);
-        }
-
-        var token =
-            await _userManager.GeneratePasswordResetTokenAsync(user);
-
-        return Result<string>.Success(token);
-    }
-
-    public async Task<Result<bool>> ResetPasswordAsync(
-    Guid userId,
-    string token,
-    string newPassword,
-    CancellationToken cancellationToken = default)
-    {
-        var user = await _userManager.FindByIdAsync(
-            userId.ToString());
-
-        if (user is null)
-        {
-            return Result<bool>.Failure(
-                UserMessages.NotFound);
-        }
-
-        var result = await _userManager.ResetPasswordAsync(
-            user,
-            token,
-            newPassword);
-
-        if (!result.Succeeded)
-        {
-            return Result<bool>.Failure(
-                new ResultError(
-                    "Authentication.PasswordResetFailed",
-                    "The password reset token is invalid or has expired.",
-                    ErrorType.Validation));
-        }
-
-        return Result<bool>.Success(true);
-    }
-
-    public async Task<Result<bool>> ChangePasswordAsync(
+    public async Task<Result<UserAccountDetails>> GetAccountDetailsAsync(
         Guid userId,
-        string currentPassword,
-        string newPassword,
         CancellationToken cancellationToken = default)
     {
         var user = await _userManager.FindByIdAsync(userId.ToString());
 
         if (user is null)
         {
-            return Result<bool>.Failure(
+            return Result<UserAccountDetails>.Failure(
                 UserMessages.NotFound);
         }
 
-        var result = await _userManager.ChangePasswordAsync(
-            user,
-            currentPassword,
-            newPassword);
+        var roles = await _userManager.GetRolesAsync(user);
+
+        var accountDetails = new UserAccountDetails(
+            user.Id,
+            user.FirstName,
+            user.LastName,
+            user.Email!,
+            user.IsActive,
+            user.EmailConfirmed,
+            roles.ToList());
+
+        return Result<UserAccountDetails>.Success(accountDetails);
+    }
+
+    public async Task<Result<UserAccountDetails>> UpdateProfileAsync(
+    Guid userId,
+    string firstName,
+    string lastName,
+    CancellationToken cancellationToken = default)
+    {
+        var user = await _userManager.FindByIdAsync(
+            userId.ToString());
+
+        if (user is null)
+        {
+            return Result<UserAccountDetails>.Failure(
+                UserMessages.NotFound);
+        }
+
+        user.FirstName = firstName;
+        user.LastName = lastName;
+
+        var result = await _userManager.UpdateAsync(user);
 
         if (!result.Succeeded)
         {
-            return Result<bool>.Failure(
-                UserMessages.PasswordChangeFailed);
+            return Result<UserAccountDetails>.Failure(
+                UserMessages.ProfileUpdateFailed);
         }
 
-        return Result<bool>.Success(true);
+        var roles = await _userManager.GetRolesAsync(user);
+
+        return Result<UserAccountDetails>.Success(
+            new UserAccountDetails(
+                user.Id,
+                user.FirstName,
+                user.LastName,
+                user.Email!,
+                user.IsActive,
+                user.EmailConfirmed,
+                roles.ToList()));
     }
 }

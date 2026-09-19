@@ -8,6 +8,8 @@ namespace Authentication.Infrastructure.Services.Email
                 "RegistrationConfirmation.html";
         private const string PasswordResetTemplate =
                 "PasswordReset.html";
+        private const string EmailChangeTemplate =
+                "EmailChangeConfirmation.html";
 
         public string RenderRegistrationConfirmation(
             string firstName,
@@ -29,6 +31,19 @@ namespace Authentication.Infrastructure.Services.Email
             return template
                 .Replace("{{FirstName}}", firstName)
                 .Replace("{{PasswordResetLink}}", passwordResetLink);
+        }
+
+        public string RenderEmailChange(
+            string firstName,
+            string newEmail,
+            string confirmationLink)
+        {
+            var template = LoadTemplate(EmailChangeTemplate);
+
+            return template
+                .Replace("{{FirstName}}", firstName)
+                .Replace("{{NewEmail}}", newEmail)
+                .Replace("{{ConfirmationLink}}", confirmationLink);
         }
 
         private static string LoadTemplate(string templateFileName)

@@ -11,15 +11,18 @@ public sealed class LoginCommandHandler
         LoginCommand,
         Result<LoginResponse>>
 {
+    private readonly IPasswordService _passwordService;
     private readonly IUserService _userService;
     private readonly ITokenService _tokenService;
     private readonly IRefreshTokenService _refreshTokenService;
 
     public LoginCommandHandler(
+        IPasswordService passwordService,
         IUserService userService,
         ITokenService tokenService,
         IRefreshTokenService refreshTokenService)
     {
+        _passwordService = passwordService;
         _userService = userService;
         _tokenService = tokenService;
         _refreshTokenService = refreshTokenService;
@@ -31,7 +34,7 @@ public sealed class LoginCommandHandler
     {
         // 1. Validate credentials
         var credentialsResult =
-            await _userService.ValidateCredentialsAsync(
+            await _passwordService.ValidateCredentialsAsync(
                 request.Email,
                 request.Password,
                 cancellationToken);

@@ -20,7 +20,7 @@ public sealed class ResetPasswordCommandHandler
         CancellationToken cancellationToken)
     {
         var result =
-            await _passwordService.ResetAsync(
+            await _passwordService.ResetPasswordAsync(
                 request.UserId,
                 request.Token,
                 request.Password,

@@ -9,5 +9,10 @@
         string RenderPasswordReset(
             string firstName,
             string resetLink);
+
+        string RenderEmailChange(
+            string firstName,
+            string newEmail,
+            string confirmationLink);
     }
 }

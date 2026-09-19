@@ -12,12 +12,12 @@ public sealed class RegisterCommandHandler
     : IRequestHandler<RegisterCommand, Result<RegisterResponse>>
 {
     private readonly IUserService _userService;
-    private readonly IEmailConfirmationService _emailConfirmationService;
+    private readonly IEmailService _emailService;
 
-    public RegisterCommandHandler(IUserService userService, IEmailConfirmationService emailConfirmationService)
+    public RegisterCommandHandler(IUserService userService, IEmailService emailService)
     {
         _userService = userService;
-        _emailConfirmationService = emailConfirmationService;
+        _emailService = emailService;
     }
 
     public async Task<Result<RegisterResponse>> Handle(
@@ -59,7 +59,7 @@ public sealed class RegisterCommandHandler
         }
 
         var confirmationResult =
-            await _emailConfirmationService.HandleAsync(
+            await _emailService.HandleAsync(
                 result.Value,
                 request.FirstName,
                 request.Email,

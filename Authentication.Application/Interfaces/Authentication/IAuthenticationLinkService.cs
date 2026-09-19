@@ -9,4 +9,9 @@ public interface IAuthenticationLinkService
     string CreatePasswordResetLink(
         Guid userId,
         string token);
+
+    string CreateEmailChangeLink(
+        Guid userId,
+        string newEmail,
+        string token);
 }
