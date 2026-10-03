@@ -11,12 +11,14 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
 using Serilog;
+using Serilog.Formatting.Json;
+using System.Diagnostics;
 using System.Text;
 using System.Text.Json.Serialization;
 using System.Threading.RateLimiting;
 
 Log.Logger = new LoggerConfiguration()
-    .WriteTo.Console()
+    .WriteTo.Console(new JsonFormatter())
     .CreateBootstrapLogger();
 
 var builder = WebApplication.CreateBuilder(args);
@@ -94,6 +96,18 @@ builder.Services.AddCors(options =>
 builder.Services.AddRateLimiter(options =>
 {
     options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+    options.OnRejected = (context, _) =>
+    {
+        var logger = context.HttpContext.RequestServices
+            .GetRequiredService<ILoggerFactory>()
+            .CreateLogger("Authentication.Api.RateLimiting");
+
+        logger.LogWarning(
+            "Request rate limit exceeded. TraceId: {TraceId}.",
+            context.HttpContext.TraceIdentifier);
+
+        return ValueTask.CompletedTask;
+    };
 
     options.AddPolicy("Authentication", httpContext =>
         RateLimitPartition.GetFixedWindowLimiter(
@@ -121,6 +135,33 @@ builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<ICurrentUser, CurrentUser>();
 
 var app = builder.Build();
+
+app.Use(async (context, next) =>
+{
+    var stopwatch = Stopwatch.StartNew();
+    var logger = context.RequestServices
+        .GetRequiredService<ILoggerFactory>()
+        .CreateLogger("Authentication.Api.Request");
+    using var scope = logger.BeginScope(
+        new Dictionary<string, object>
+        {
+            ["TraceId"] = context.TraceIdentifier
+        });
+
+    try
+    {
+        await next();
+    }
+    finally
+    {
+        logger.LogInformation(
+            "HTTP {RequestMethod} request completed with status {StatusCode} in {ElapsedMilliseconds} ms. TraceId: {TraceId}.",
+            context.Request.Method,
+            context.Response.StatusCode,
+            stopwatch.ElapsedMilliseconds,
+            context.TraceIdentifier);
+    }
+});
 
 app.UseExceptionHandler();
 

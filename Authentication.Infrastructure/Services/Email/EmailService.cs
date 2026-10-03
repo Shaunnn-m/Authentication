@@ -17,6 +17,8 @@ namespace Authentication.Infrastructure.Services.Email
     {
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IUserService _userService;
+
+        private readonly SmtpEmailService _smtpEmailService;
         private readonly IEmailTemplateService _emailTemplateService;
         private readonly IAuthenticationLinkService _authenticationLinkService;
 
@@ -25,17 +27,21 @@ namespace Authentication.Infrastructure.Services.Email
         private readonly ILogger<EmailService> _logger;
 
         public EmailService(
+            UserManager<ApplicationUser> userManager,
             IUserService userService,
             IAuthenticationLinkService authenticationLinkService,
             IEmailTemplateService emailTemplateService,
             IRefreshTokenService refreshTokenService,
+            SmtpEmailService smtpEmailService,
             IOptions<AuthenticationEmailOptions> options,
             ILogger<EmailService> logger)
         {
+            _userManager = userManager;
             _userService = userService;
             _authenticationLinkService = authenticationLinkService;
             _emailTemplateService = emailTemplateService;
             _refreshTokenService = refreshTokenService;
+            _smtpEmailService = smtpEmailService;
             _options = options.Value;
             _logger = logger;
         }
@@ -44,19 +50,9 @@ namespace Authentication.Infrastructure.Services.Email
             EmailMessage email,
             CancellationToken cancellationToken = default)
         {
-           
-            _logger.LogInformation(
-                  """
-            Email
-            To: {Recipient}
-            Subject: {Subject}
-            Body:
-            {Body}
-            """,
-            email.To,
-            email.Subject,
-            email.Body);
-            await Task.CompletedTask;
+            await _smtpEmailService.SendAsync(
+            email,
+            cancellationToken);
         }
 
         public async Task<Result<EmailConfirmationResult?>> HandleAsync(

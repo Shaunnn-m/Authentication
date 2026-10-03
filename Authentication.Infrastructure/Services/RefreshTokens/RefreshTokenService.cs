@@ -6,16 +6,21 @@ using Authentication.Application.Interfaces.Authentication;
 using Authentication.Domain.Entities;
 using Authentication.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace Authentication.Infrastructure.Services.RefreshTokens;
 
 public class RefreshTokenService : IRefreshTokenService
 {
     private readonly AuthenticationDbContext _dbContext;
+    private readonly ILogger<RefreshTokenService> _logger;
 
-    public RefreshTokenService(AuthenticationDbContext dbContext)
+    public RefreshTokenService(
+        AuthenticationDbContext dbContext,
+        ILogger<RefreshTokenService> logger)
     {
         _dbContext = dbContext;
+        _logger = logger;
     }
 
     public async Task<Result<string>> CreateAsync(
@@ -56,12 +61,16 @@ public class RefreshTokenService : IRefreshTokenService
 
         if (token is null)
         {
+            _logger.LogWarning(
+                "Refresh token validation rejected an unknown token.");
             return Result<Guid>.Failure(
                 UserMessages.InvalidRefreshToken);
         }
 
         if (token.IsRevoked)
         {
+            _logger.LogWarning(
+                "Refresh token reuse detected; revoking all tokens for the account.");
             await RevokeAllAsync(
                 token.UserId,
                 cancellationToken);

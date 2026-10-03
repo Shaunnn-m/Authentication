@@ -3,7 +3,6 @@ using Authentication.Application.Common.Results;
 using Authentication.Application.Interfaces.Authentication;
 using Authentication.Application.Interfaces.Identity;
 using MediatR;
-using Microsoft.Extensions.Logging;
 
 namespace Authentication.Application.Features.Authentication.RefreshToken;
 
@@ -14,17 +13,13 @@ public sealed class RefreshTokenCommandHandler
     private readonly IUserService _userService;
     private readonly ITokenService _tokenService;
 
-    private readonly ILogger<RefreshTokenCommandHandler> _logger;
-
     public RefreshTokenCommandHandler(
         IRefreshTokenService refreshTokenService,
         IUserService userService,
-        ILogger<RefreshTokenCommandHandler> logger,
         ITokenService tokenService)
     {
         _refreshTokenService = refreshTokenService;
         _userService = userService;
-        _logger = logger;
         _tokenService = tokenService;
     }
 
@@ -38,7 +33,6 @@ public sealed class RefreshTokenCommandHandler
 
         if (validationResult.IsFailure)
         {
-            _logger.LogWarning("Invalid refresh token provided.");
             return Result<RefreshTokenResponse>.Failure(
                 UserMessages.InvalidRefreshToken);
         }
@@ -51,7 +45,6 @@ public sealed class RefreshTokenCommandHandler
 
         if (userResult.IsFailure)
         {
-            _logger.LogWarning("User not found.");
             return Result<RefreshTokenResponse>.Failure(
                 UserMessages.NotFound);
         }
@@ -62,14 +55,12 @@ public sealed class RefreshTokenCommandHandler
 
         if (activeResult.IsFailure)
         {
-            _logger.LogWarning("Failed to check if user is active.");
             return Result<RefreshTokenResponse>.Failure(
                 activeResult.Error!);
         }
 
         if (!activeResult.Value)
         {
-            _logger.LogWarning("Inactive user attempted to refresh token.");
             return Result<RefreshTokenResponse>.Failure(
                 UserMessages.AccountInactive);
         }
@@ -80,7 +71,6 @@ public sealed class RefreshTokenCommandHandler
 
         if (rolesResult.IsFailure)
         {
-            _logger.LogWarning("Failed to retrieve user roles.");
             return Result<RefreshTokenResponse>.Failure(
                 rolesResult.Error!);
         }

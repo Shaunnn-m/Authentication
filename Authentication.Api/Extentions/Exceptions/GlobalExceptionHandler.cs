@@ -21,6 +21,12 @@ namespace Authentication.Api.Extentions.Exceptions
         {
             if (exception is ValidationException validationException)
             {
+                _logger.LogWarning(
+                    "Request validation failed for {Method}. TraceId: {TraceId}; ErrorCount: {ErrorCount}.",
+                    httpContext.Request.Method,
+                    httpContext.TraceIdentifier,
+                    validationException.Errors.Count());
+
                 var errors = validationException.Errors
                     .GroupBy(error => error.PropertyName)
                     .ToDictionary(
@@ -48,7 +54,9 @@ namespace Authentication.Api.Extentions.Exceptions
 
             _logger.LogError(
                 exception,
-                "An unhandled exception occurred.");
+                "An unhandled exception occurred for {Method}. TraceId: {TraceId}.",
+                httpContext.Request.Method,
+                httpContext.TraceIdentifier);
 
             var internalError = new ProblemDetails
             {

@@ -43,6 +43,7 @@ public static class DependencyInjection
         services.AddScoped<IRefreshTokenService, RefreshTokenService>();
         services.AddScoped<IUserService, UserService>();
         services.AddScoped<IAuthenticationLinkService, AuthenticationLinkService>();
+        services.AddScoped<SmtpEmailService>();
         services.AddScoped<IEmailService, EmailService>();
         services.AddScoped<IEmailTemplateService, EmailTemplateService>();
         services.AddScoped<IPasswordService, PasswordService>();
@@ -58,6 +59,10 @@ public static class DependencyInjection
         services.Configure<InitialAdminOptions>(
             configuration.GetSection(
                 InitialAdminOptions.SectionName));
+
+        services.Configure<SmtpOptions>(
+            configuration.GetSection(
+                SmtpOptions.SectionName));
 
         return services;
     }

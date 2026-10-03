@@ -21,6 +21,10 @@ public static class DependencyInjection
 
         services.AddTransient(
             typeof(IPipelineBehavior<,>),
+            typeof(OperationLoggingBehavior<,>));
+
+        services.AddTransient(
+            typeof(IPipelineBehavior<,>),
             typeof(ValidationBehavior<,>));
 
         return services;

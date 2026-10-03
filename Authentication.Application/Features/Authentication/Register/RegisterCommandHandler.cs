@@ -4,7 +4,6 @@ using MediatR;
 using Authentication.Application.Common.Messages;
 using Authentication.Application.Interfaces.Email;
 using Authentication.Application.Abstractions.Identity;
-using Microsoft.Extensions.Logging;
 
 namespace Authentication.Application.Features.Authentication.Register;
 
@@ -15,34 +14,25 @@ public sealed class RegisterCommandHandler
     private readonly IEmailService _emailService;
     private readonly IAdminUserService _adminUserService;
 
-    private readonly ILogger<RegisterCommandHandler> _logger;
-
     public RegisterCommandHandler(IUserService userService, 
         IEmailService emailService,
-        IAdminUserService adminUserService,
-        ILogger<RegisterCommandHandler> logger)
+        IAdminUserService adminUserService)
     {
         _userService = userService;
         _emailService = emailService;
         _adminUserService = adminUserService;
-        _logger = logger;
     }
 
     public async Task<Result<RegisterResponse>> Handle(
         RegisterCommand request,
         CancellationToken cancellationToken)
     {
-        _logger.LogInformation(
-        "User registration requested for email {Email}.",
-        request.Email);
-
         var exists = await _userService.ExistsByEmailAsync(
             request.Email,
             cancellationToken);
 
         if (exists)
         {
-            _logger.LogWarning("User registration failed for email {Email}. User already exists.",request.Email);
             return Result<RegisterResponse>.Failure(
                 UserMessages.AlreadyExists);
         }
@@ -56,7 +46,6 @@ public sealed class RegisterCommandHandler
 
         if (result.IsFailure)
         {
-            _logger.LogWarning("User registration failed for email {Email}.", request.Email);
             return Result<RegisterResponse>.Failure(
                 UserMessages.AlreadyExists);
         }
@@ -68,7 +57,6 @@ public sealed class RegisterCommandHandler
 
         if (roleResult.IsFailure)
         {
-            _logger.LogWarning("User registration failed for email {Email}. Failed to add user to role.", request.Email);
             return Result<RegisterResponse>.Failure(
                 roleResult.Error!);
         }
@@ -82,7 +70,6 @@ public sealed class RegisterCommandHandler
 
         if (confirmationResult.IsFailure)
         {
-            _logger.LogWarning("User registration failed for email {Email}. Failed to send confirmation email.", request.Email);
             return Result<RegisterResponse>.Failure(
                 confirmationResult.Error!);
         }
