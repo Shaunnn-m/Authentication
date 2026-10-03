@@ -49,19 +49,35 @@ public class RefreshTokenService : IRefreshTokenService
     {
         var tokenHash = HashToken(refreshToken);
 
-        var storedToken = await _dbContext.RefreshTokens
-            .FirstOrDefaultAsync(
-                token => token.TokenHash == tokenHash,
+        var token = await _dbContext.RefreshTokens
+            .SingleOrDefaultAsync(
+                x => x.TokenHash == tokenHash,
                 cancellationToken);
 
-        if (storedToken is null || !storedToken.IsActive)
+        if (token is null)
+        {
+            return Result<Guid>.Failure(
+                UserMessages.InvalidRefreshToken);
+        }
+
+        if (token.IsRevoked)
+        {
+            await RevokeAllAsync(
+                token.UserId,
+                cancellationToken);
+
+            return Result<Guid>.Failure(
+                UserMessages.RefreshTokenReuseDetected);
+        }
+
+        if (token.IsExpired)
         {
             return Result<Guid>.Failure(
                 UserMessages.InvalidRefreshToken);
         }
 
         return Result<Guid>.Success(
-            storedToken.UserId);
+            token.UserId);
     }
 
     public async Task RevokeAsync(

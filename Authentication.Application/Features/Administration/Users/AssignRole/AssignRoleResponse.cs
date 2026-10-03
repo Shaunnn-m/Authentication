@@ -1,6 +1,8 @@
+using Authentication.Application.Abstractions.Identity;
+
 namespace Authentication.Application.Features.Administration.Users.AssignRole;
 
 public sealed record AssignRoleResponse(
     Guid UserId,
-    string Role,
+    UserRole Role,
     string Message);

@@ -1,4 +1,6 @@
 using Authentication.Application.Abstractions.Identity;
+using Authentication.Application.Abstractions.Results;
+using Authentication.Application.Common.Authorization;
 using Authentication.Application.Common.Messages;
 using Authentication.Application.Common.Results;
 using Authentication.Application.Interfaces.Identity;
@@ -146,10 +148,10 @@ public sealed class AdminUserService : IAdminUserService
 
         return Result<AdminUserDetails>.Success(userDetails);
     }
-
-    public async Task<Result<bool>> ActivateAsync(
-        Guid userId,
-        CancellationToken cancellationToken = default)
+    public async Task<Result<bool>> RemoveFromRoleAsync(
+    Guid userId,
+    string role,
+    CancellationToken cancellationToken = default)
     {
         var user = await _userManager.FindByIdAsync(
             userId.ToString());
@@ -160,21 +162,88 @@ public sealed class AdminUserService : IAdminUserService
                 UserMessages.NotFound);
         }
 
-        if (user.IsActive)
+        var hasRole = await _userManager.IsInRoleAsync(
+            user,
+            role);
+
+        if (!hasRole)
         {
             return Result<bool>.Success(true);
         }
 
-        user.IsActive = true;
-        
-        var result = await _userManager.UpdateAsync(user);
+        if (string.Equals(
+        role,
+        AppRoles.Admin,
+        StringComparison.OrdinalIgnoreCase))
+        {
+            var admins = await _userManager.GetUsersInRoleAsync(
+                AppRoles.Admin);
+
+            if (admins.Count <= 1)
+            {
+                return Result<bool>.Failure(
+                    UserMessages.LastAdminRoleRemovalForbidden);
+            }
+        }
+
+        var result = await _userManager.RemoveFromRoleAsync(
+            user,
+            role);
 
         if (!result.Succeeded)
         {
+            var errors = string.Join(
+                ", ",
+                result.Errors.Select(error => error.Description));
+
             return Result<bool>.Failure(
-                UserMessages.FailedToActivateUser);
+                new ResultError(
+                    "User.RoleAssignmentFailed",
+                    errors,
+                    ErrorType.Failure));
+        }
+
+        return Result<bool>.Success(true);
+    }
+
+    public async Task<Result<bool>> AddToRoleAsync(
+    Guid userId,
+    UserRole role,
+    CancellationToken cancellationToken = default)
+    {
+        var user = await _userManager.FindByIdAsync(
+            userId.ToString());
+
+        if (user is null)
+        {
+            return Result<bool>.Failure(
+                UserMessages.NotFound);
         }
         
+        var roleName = role.ToString();
+
+        if (await _userManager.IsInRoleAsync(user, roleName))
+        {
+            return Result<bool>.Success(true);
+        }
+
+        var result = await _userManager.AddToRoleAsync(
+            user,
+            roleName);
+
+        if (!result.Succeeded)
+        {
+            var errors = string.Join(
+                ", ",
+                result.Errors.Select(error => error.Description));
+
+            return Result<bool>.Failure(
+                new ResultError(
+                    "User.RoleAssignmentFailed",
+                    errors,
+                    ErrorType.Failure));
+        }
+
         return Result<bool>.Success(true);
     }
 }

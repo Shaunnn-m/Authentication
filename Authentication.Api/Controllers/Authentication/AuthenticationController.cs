@@ -10,11 +10,13 @@ using Authentication.Application.Features.Authentication.ResetPassword;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace Authentication.Api.Controllers.Authentication;
 
 [ApiController]
 [Route("api/authentication")]
+[EnableRateLimiting("Authentication")]
 public sealed class AuthenticationController : ControllerBase
 {
     private readonly ISender _sender;

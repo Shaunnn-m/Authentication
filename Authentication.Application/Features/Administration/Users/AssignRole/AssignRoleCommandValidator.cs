@@ -1,3 +1,4 @@
+using Authentication.Application.Abstractions.Identity;
 using Authentication.Application.Common.Authorization;
 using FluentValidation;
 
@@ -13,15 +14,12 @@ public sealed class AssignRoleCommandValidator
             .WithMessage("User ID is required.");
 
         RuleFor(x => x.Role)
-            .NotEmpty()
-            .Must(role =>
-                role.Equals(
-                    AppRoles.Admin,
-                    StringComparison.OrdinalIgnoreCase)
-                ||
-                role.Equals(
-                    AppRoles.Customer,
-                    StringComparison.OrdinalIgnoreCase))
-            .WithMessage("The specified role is invalid.");
+            .IsInEnum()
+            .Must((command, role) =>
+            {
+                if (command.Role == UserRole.Admin || command.Role == UserRole.Customer)
+                return true;
+                return false;
+            });
     }
 }

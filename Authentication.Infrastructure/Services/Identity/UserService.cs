@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Identity;
 using Authentication.Application.Abstractions.Results;
 using Authentication.Application.Abstractions.Identity;
 using Authentication.Application.Interfaces.Authentication;
+using Authentication.Application.Common.Authorization;
 
 namespace Authentication.Infrastructure.Identity;
 
@@ -200,45 +201,6 @@ public sealed class UserService : IUserService
             (user.Id, user.FirstName, user.Email!));
     }
 
-    public async Task<Result<bool>> AddToRoleAsync(
-    Guid userId,
-    string role,
-    CancellationToken cancellationToken = default)
-    {
-        var user = await _userManager.FindByIdAsync(
-            userId.ToString());
-
-        if (user is null)
-        {
-            return Result<bool>.Failure(
-                UserMessages.NotFound);
-        }
-
-        if (await _userManager.IsInRoleAsync(user, role))
-        {
-            return Result<bool>.Success(true);
-        }
-
-        var result = await _userManager.AddToRoleAsync(
-            user,
-            role);
-
-        if (!result.Succeeded)
-        {
-            var errors = string.Join(
-                ", ",
-                result.Errors.Select(error => error.Description));
-
-            return Result<bool>.Failure(
-                new ResultError(
-                    "User.RoleAssignmentFailed",
-                    errors,
-                    ErrorType.Failure));
-        }
-
-        return Result<bool>.Success(true);
-    }
-
     public async Task<Result<UserAccountDetails>> GetAccountDetailsAsync(
         Guid userId,
         CancellationToken cancellationToken = default)
@@ -322,6 +284,25 @@ public sealed class UserService : IUserService
             return Result<bool>.Success(true);
         }
 
+        var isAdmin = await _userManager.IsInRoleAsync(
+        user,
+        AppRoles.Admin);
+
+        if (isAdmin)
+        {
+            var admins = await _userManager
+                .GetUsersInRoleAsync(AppRoles.Admin);
+
+            var activeAdmins = admins.Count(
+                admin => admin.IsActive);
+
+            if (activeAdmins <= 1)
+            {
+                return Result<bool>.Failure(
+                    UserMessages.LastAdminDeactivationForbidden);
+            }
+    }
+
         user.IsActive = false;
 
         var result = await _userManager.UpdateAsync(user);
@@ -342,6 +323,21 @@ public sealed class UserService : IUserService
     {
         var user = await _userManager.FindByEmailAsync(email);
 
+        return await UserActivation(user);
+    }
+
+    public async Task<Result<bool>> ActivateAsync(
+        Guid userId,
+        CancellationToken cancellationToken = default)
+    {
+        var user = await _userManager.FindByIdAsync(
+            userId.ToString());
+
+        return await UserActivation(user);
+    }
+
+    private async Task<Result<bool>> UserActivation(ApplicationUser? user)
+    {
         if (user is null)
         {
             return Result<bool>.Failure(
@@ -359,7 +355,8 @@ public sealed class UserService : IUserService
 
         if (!result.Succeeded)
         {
-            return Result<bool>.Failure(UserMessages.ReactivationFailed);
+            return Result<bool>.Failure(
+                UserMessages.FailedToActivateUser);
         }
 
         return Result<bool>.Success(true);

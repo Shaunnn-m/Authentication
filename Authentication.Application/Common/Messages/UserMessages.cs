@@ -124,4 +124,22 @@ public static class UserMessages
             "User.EmailAlreadyInUse",
             "The specified email address is already in use.",
             ErrorType.Conflict);
+
+    public static readonly ResultError LastAdminRoleRemovalForbidden =
+    new(
+        "User.LastAdminRoleRemovalForbidden",
+        "The Admin role cannot be removed because this is the last administrator account.",
+        ErrorType.Forbidden);
+
+    public static readonly ResultError LastAdminDeactivationForbidden =
+    new(
+        "User.LastAdminDeactivationForbidden",
+        "The Admin account cannot be deactivated because this is the last active administrator account.",
+        ErrorType.Forbidden);
+
+    public static readonly ResultError RefreshTokenReuseDetected =
+    new(
+        "Authentication.RefreshTokenReuseDetected",
+        "Refresh token reuse was detected. All active sessions have been revoked.",
+        ErrorType.Unauthorized);
 }

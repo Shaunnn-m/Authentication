@@ -5,6 +5,7 @@ using Authentication.Application.Features.Administration.Users.AssignRole;
 using Authentication.Application.Features.Administration.Users.DeactivateUser;
 using Authentication.Application.Features.Administration.Users.GetUser;
 using Authentication.Application.Features.Administration.Users.GetUsers;
+using Authentication.Application.Features.Administration.Users.UnassignRole;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -71,19 +72,26 @@ public sealed class UsersController : ControllerBase
         return this.ToActionResult(result);
     }
 
-    [HttpPost("{userId:guid}/roles")]
+    [HttpPost("{userId:guid}/assign-role/{role}")]
     public async Task<IActionResult> AssignRole(
-        Guid userId,
-        [FromBody] AssignRoleCommand command,
+        [FromQuery] AssignRoleCommand command,
         CancellationToken cancellationToken)
     {
-        var request = command with
-        {
-            UserId = userId
-        };
 
         var result = await _sender.Send(
-            request,
+            command,
+            cancellationToken);
+
+        return this.ToActionResult(result);
+    }
+
+    [HttpDelete("{userId:guid}/unassign-roles/{role}")]
+    public async Task<IActionResult> UnassignRole(
+        [FromQuery] UnassignRoleCommand command,
+        CancellationToken cancellationToken)
+    {
+        var result = await _sender.Send(
+            command,
             cancellationToken);
 
         return this.ToActionResult(result);

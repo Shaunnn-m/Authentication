@@ -46,11 +46,6 @@ public interface IUserService
     Guid userId,
     CancellationToken cancellationToken = default);
 
-    Task<Result<bool>> AddToRoleAsync(
-    Guid userId,
-    string role,
-    CancellationToken cancellationToken = default);
-
     Task<Result<UserAccountDetails>> GetAccountDetailsAsync(
     Guid userId,
     CancellationToken cancellationToken = default);
@@ -62,6 +57,10 @@ public interface IUserService
     CancellationToken cancellationToken = default);
 
     Task<Result<bool>> DeactivateAccountAsync(
+    Guid userId,
+    CancellationToken cancellationToken = default);
+
+    Task<Result<bool>> ActivateAsync(
     Guid userId,
     CancellationToken cancellationToken = default);
 

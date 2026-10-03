@@ -7,18 +7,18 @@ namespace Authentication.Application.Features.Administration.Users.AssignRole;
 public sealed class AssignRoleCommandHandler
     : IRequestHandler<AssignRoleCommand, Result<AssignRoleResponse>>
 {
-    private readonly IUserService _userService;
+    private readonly IAdminUserService _adminUserService;
 
-    public AssignRoleCommandHandler(IUserService userService)
+    public AssignRoleCommandHandler(IAdminUserService adminUserService)
     {
-        _userService = userService;
+        _adminUserService = adminUserService;
     }
 
     public async Task<Result<AssignRoleResponse>> Handle(
         AssignRoleCommand request,
         CancellationToken cancellationToken)
     {
-        var result = await _userService.AddToRoleAsync(
+        var result = await _adminUserService.AddToRoleAsync(
             request.UserId,
             request.Role,
             cancellationToken);

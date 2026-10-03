@@ -14,8 +14,13 @@ public interface IAdminUserService
     UserIdentifierType identifierType,
     string identifier,
     CancellationToken cancellationToken = default);
+    Task<Result<bool>> RemoveFromRoleAsync(
+        Guid userId,
+        string role,
+        CancellationToken cancellationToken = default);
 
-    Task<Result<bool>> ActivateAsync(
+    Task<Result<bool>> AddToRoleAsync(
     Guid userId,
+    UserRole role,
     CancellationToken cancellationToken = default);
 }
