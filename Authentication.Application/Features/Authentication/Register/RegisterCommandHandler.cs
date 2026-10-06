@@ -4,6 +4,8 @@ using MediatR;
 using Authentication.Application.Common.Messages;
 using Authentication.Application.Interfaces.Email;
 using Authentication.Application.Abstractions.Identity;
+using Authentication.Application.Interfaces.Applications;
+using Authentication.Domain.Applications;
 
 namespace Authentication.Application.Features.Authentication.Register;
 
@@ -13,20 +15,43 @@ public sealed class RegisterCommandHandler
     private readonly IUserService _userService;
     private readonly IEmailService _emailService;
     private readonly IAdminUserService _adminUserService;
+    private readonly IApplicationRepository _applicationRepository;
+    private readonly IApplicationUserAccessRepository _applicationUserAccessRepository;
 
     public RegisterCommandHandler(IUserService userService, 
         IEmailService emailService,
-        IAdminUserService adminUserService)
+        IAdminUserService adminUserService,
+        IApplicationRepository applicationRepository,
+        IApplicationUserAccessRepository applicationUserAccessRepository)
+
     {
         _userService = userService;
         _emailService = emailService;
         _adminUserService = adminUserService;
+        _applicationRepository = applicationRepository;
+        _applicationUserAccessRepository = applicationUserAccessRepository;
     }
 
     public async Task<Result<RegisterResponse>> Handle(
         RegisterCommand request,
         CancellationToken cancellationToken)
     {
+        var application = await _applicationRepository.GetByAppplicationId(
+        request.ApplicationId,
+        cancellationToken);
+
+        if (application is null)
+        {
+            return Result<RegisterResponse>.Failure(
+                ApplicationMessages.NotFound);
+        }
+
+        if (!application.IsActive)
+        {
+            return Result<RegisterResponse>.Failure(
+                ApplicationMessages.Inactive);
+        }
+
         var exists = await _userService.ExistsByEmailAsync(
             request.Email,
             cancellationToken);
@@ -73,6 +98,14 @@ public sealed class RegisterCommandHandler
             return Result<RegisterResponse>.Failure(
                 confirmationResult.Error!);
         }
+
+        var applicationAccess = ApplicationUserAccess.Create(
+            application.Id,
+            result.Value);
+
+        await _applicationUserAccessRepository.AddAsync(
+            applicationAccess,
+            cancellationToken);
 
         return Result<RegisterResponse>.Success(
             new RegisterResponse(

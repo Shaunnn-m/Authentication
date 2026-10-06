@@ -1,4 +1,5 @@
-﻿using Authentication.Domain.Entities;
+﻿using Authentication.Domain.Applications;
+using Authentication.Domain.Entities;
 using Authentication.Infrastructure.Identity;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
@@ -11,6 +12,12 @@ public class AuthenticationDbContext
 {
     
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
+
+    public DbSet<Authentication.Domain.Applications.Application> Applications =>
+    Set<Authentication.Domain.Applications.Application>();
+
+    public DbSet<ApplicationUserAccess> ApplicationUserAccess =>
+        Set<ApplicationUserAccess>();
     public AuthenticationDbContext(
         DbContextOptions<AuthenticationDbContext> options)
         : base(options)
