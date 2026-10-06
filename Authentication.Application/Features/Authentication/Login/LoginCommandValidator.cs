@@ -12,6 +12,10 @@ public sealed class LoginCommandValidator
             .EmailAddress()
             .MaximumLength(256);
 
+        RuleFor(x => x.ApplicationId)
+            .NotEmpty()
+            .WithMessage("Application is required.");
+
         RuleFor(x => x.Password)
             .NotEmpty();
     }

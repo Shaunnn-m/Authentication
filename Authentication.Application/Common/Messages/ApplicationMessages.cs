@@ -1,5 +1,6 @@
 using Authentication.Application.Abstractions.Results;
 using Authentication.Application.Common.Results;
+using System.Diagnostics;
 
 namespace Authentication.Application.Common.Messages;
 

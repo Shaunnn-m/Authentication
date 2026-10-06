@@ -1,5 +1,6 @@
 ﻿using System.Security.Cryptography;
 using System.Text;
+using Authentication.Application.Abstractions.Results.RefreshToken;
 using Authentication.Application.Common.Messages;
 using Authentication.Application.Common.Results;
 using Authentication.Application.Interfaces.Authentication;
@@ -25,6 +26,7 @@ public class RefreshTokenService : IRefreshTokenService
 
     public async Task<Result<string>> CreateAsync(
         Guid userId,
+        Guid applicationId,
         CancellationToken cancellationToken = default)
     {
         var tokenBytes = RandomNumberGenerator.GetBytes(64);
@@ -36,6 +38,7 @@ public class RefreshTokenService : IRefreshTokenService
 
         var refreshToken = RefreshToken.Create(
             userId,
+            applicationId,
             tokenHash,
             DateTime.UtcNow.AddDays(7));
 
@@ -48,7 +51,7 @@ public class RefreshTokenService : IRefreshTokenService
         return Result<string>.Success(token);
     }
 
-    public async Task<Result<Guid>> ValidateAsync(
+    public async Task<Result<RefreshTokenValidationResult>> ValidateAsync(
     string refreshToken,
     CancellationToken cancellationToken = default)
     {
@@ -63,7 +66,7 @@ public class RefreshTokenService : IRefreshTokenService
         {
             _logger.LogWarning(
                 "Refresh token validation rejected an unknown token.");
-            return Result<Guid>.Failure(
+            return Result<RefreshTokenValidationResult>.Failure(
                 UserMessages.InvalidRefreshToken);
         }
 
@@ -75,18 +78,19 @@ public class RefreshTokenService : IRefreshTokenService
                 token.UserId,
                 cancellationToken);
 
-            return Result<Guid>.Failure(
+            return Result<RefreshTokenValidationResult>.Failure(
                 UserMessages.RefreshTokenReuseDetected);
         }
 
         if (token.IsExpired)
         {
-            return Result<Guid>.Failure(
+            return Result<RefreshTokenValidationResult>.Failure(
                 UserMessages.InvalidRefreshToken);
         }
 
-        return Result<Guid>.Success(
-            token.UserId);
+        return Result<RefreshTokenValidationResult>.Success(
+           new RefreshTokenValidationResult(token.UserId,
+            token.ApplicationId));
     }
 
     public async Task RevokeAsync(

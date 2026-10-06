@@ -21,6 +21,9 @@ public class RefreshTokenConfiguration
         builder.Property(x => x.UserId)
             .IsRequired();
 
+        builder.Property(x => x.ApplicationId)
+            .IsRequired();
+
         builder.Property(x => x.ExpiresAt)
             .IsRequired();
 

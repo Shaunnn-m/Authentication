@@ -20,6 +20,7 @@ public class JwtTokenService : ITokenService
     public AccessTokenResult GenerateAccessToken(
         Guid userId,
         string email,
+        Guid applicationId,
         IEnumerable<string> roles)
     {
         var claims = new List<Claim>
@@ -27,7 +28,8 @@ public class JwtTokenService : ITokenService
             new(JwtRegisteredClaimNames.Sub, userId.ToString()),
             new(JwtRegisteredClaimNames.Email, email),
             new(ClaimTypes.NameIdentifier, userId.ToString()),
-            new(ClaimTypes.Email, email)
+            new(ClaimTypes.Email, email),
+            new("application_id", applicationId.ToString())
         };
 
         claims.AddRange(

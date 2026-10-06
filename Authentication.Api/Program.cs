@@ -1,3 +1,4 @@
+using Authentication.Api.Common.Authorization;
 using Authentication.Api.Common.Identity;
 using Authentication.Api.Extentions.Exceptions;
 using Authentication.Application;
@@ -7,6 +8,7 @@ using Authentication.Application.Interfaces.Identity;
 using Authentication.Infrastructure;
 using Authentication.Infrastructure.Identity;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
@@ -37,6 +39,9 @@ builder.Host.UseSerilog(
 
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
+builder.Services.AddSingleton<
+    IAuthorizationHandler,
+    ApplicationAccessHandler>();
 builder.Services
     .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
@@ -120,7 +125,20 @@ builder.Services.AddRateLimiter(options =>
                 QueueLimit = 0
             }));
 });
-builder.Services.AddAuthorization();
+
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy(
+        "ApplicationAccess",
+        policy =>
+        {
+            policy.RequireAuthenticatedUser();
+
+            policy.AddRequirements(
+                new ApplicationAccessRequirement());
+        });
+});
+
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddProblemDetails();
 builder.Services.
