@@ -1,6 +1,9 @@
-﻿namespace Authentication.Api.Common.Authorization
+﻿using Microsoft.AspNetCore.Authorization;
+
+namespace Authentication.Api.Common.Authorization
 {
-    public class ApplicationAccessRequirement
+    public sealed class ApplicationAccessRequirement
+    : IAuthorizationRequirement
     {
     }
 }

@@ -1,5 +1,6 @@
 ﻿using Authentication.Application.Common.Authentication;
 using Authentication.Application.Common.Authorization;
+using Authentication.Application.Interfaces.Application;
 using Authentication.Application.Interfaces.Applications;
 using Authentication.Application.Interfaces.Authentication;
 using Authentication.Application.Interfaces.Email;
@@ -7,6 +8,7 @@ using Authentication.Application.Interfaces.Identity;
 using Authentication.Infrastructure.Identity;
 using Authentication.Infrastructure.Persistence;
 using Authentication.Infrastructure.Persistence.Repositories;
+using Authentication.Infrastructure.Services.Application;
 using Authentication.Infrastructure.Services.Email;
 using Authentication.Infrastructure.Services.Identity;
 using Authentication.Infrastructure.Services.RefreshTokens;
@@ -50,10 +52,9 @@ public static class DependencyInjection
         services.AddScoped<IEmailTemplateService, EmailTemplateService>();
         services.AddScoped<IPasswordService, PasswordService>();
         services.AddScoped<IAdminUserService, AdminUserService>();
-        services.AddScoped<
-        IApplicationUserAccessRepository,
-        ApplicationUserAccessRepository>();
+        services.AddScoped<IApplicationUserAccessRepository, ApplicationUserAccessRepository>();
         services.AddScoped<IApplicationRepository, ApplicationRepository>();
+        services.AddScoped<IApplicationRoleRepository, ApplicationRoleRepository>();
 
         services.Configure<JwtOptions>(
             configuration.GetSection(JwtOptions.SectionName));

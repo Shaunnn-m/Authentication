@@ -1,12 +1,33 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Authentication.Application.Interfaces.Application;
+using Microsoft.AspNetCore.Http;
+using System.Security.Claims;
 
 namespace Authentication.Infrastructure.Services.Application
 {
-    class CurrentApplicationService
+    public sealed class CurrentApplicationService
+    : ICurrentApplicationService
     {
+        private readonly IHttpContextAccessor _httpContextAccessor;
+
+        public CurrentApplicationService(
+            IHttpContextAccessor httpContextAccessor)
+        {
+            _httpContextAccessor = httpContextAccessor;
+        }
+
+        public Guid? ApplicationId
+        {
+            get
+            {
+                var value = _httpContextAccessor
+                    .HttpContext?
+                    .User
+                    .FindFirstValue("application_id");
+
+                return Guid.TryParse(value, out var applicationId)
+                    ? applicationId
+                    : null;
+            }
+        }
     }
 }

@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.RateLimiting;
 
 namespace Authentication.Api.Controllers.Authentication;
 
+[Authorize(Policy = "ApplicationAccess")]
 [ApiController]
 [Route("api/authentication")]
 [EnableRateLimiting("Authentication")]

@@ -13,8 +13,12 @@ public class AuthenticationDbContext
     
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
 
-    public DbSet<Authentication.Domain.Applications.Application> Applications =>
-    Set<Authentication.Domain.Applications.Application>();
+    public DbSet<Domain.Applications.Application> Applications =>
+    Set<Domain.Applications.Application>();
+    public DbSet<ApplicationRole> ApplicationRoles => Set<ApplicationRole>();
+
+    public DbSet<ApplicationUserRole> ApplicationUserRoles =>
+        Set<ApplicationUserRole>();
 
     public DbSet<ApplicationUserAccess> ApplicationUserAccess =>
         Set<ApplicationUserAccess>();

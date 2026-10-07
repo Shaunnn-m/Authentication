@@ -39,7 +39,7 @@ builder.Host.UseSerilog(
 
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
-builder.Services.AddSingleton<
+builder.Services.AddScoped<
     IAuthorizationHandler,
     ApplicationAccessHandler>();
 builder.Services

@@ -1,12 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
+﻿
 namespace Authentication.Application.Interfaces.Application
 {
-    class ICurrentApplicationService
+    public interface ICurrentApplicationService
     {
+        Guid? ApplicationId { get; }
     }
 }
