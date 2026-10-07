@@ -8,6 +8,7 @@ using Authentication.Application.Interfaces.Identity;
 using Authentication.Infrastructure.Identity;
 using Authentication.Infrastructure.Persistence;
 using Authentication.Infrastructure.Persistence.Repositories;
+using Authentication.Infrastructure.Repositories;
 using Authentication.Infrastructure.Services.Application;
 using Authentication.Infrastructure.Services.Email;
 using Authentication.Infrastructure.Services.Identity;
@@ -53,6 +54,9 @@ public static class DependencyInjection
         services.AddScoped<IPasswordService, PasswordService>();
         services.AddScoped<IAdminUserService, AdminUserService>();
         services.AddScoped<IApplicationUserAccessRepository, ApplicationUserAccessRepository>();
+        services.AddScoped<
+            IApplicationUserRoleRepository,
+            Authentication.Infrastructure.Repositories.ApplicationUserRoleRepository>();
         services.AddScoped<IApplicationRepository, ApplicationRepository>();
         services.AddScoped<IApplicationRoleRepository, ApplicationRoleRepository>();
 

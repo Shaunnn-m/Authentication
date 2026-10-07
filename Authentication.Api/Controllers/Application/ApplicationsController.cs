@@ -1,4 +1,5 @@
-﻿using Authentication.Application.Abstractions.Results.Application;
+﻿using Authentication.Api.Extentions.Results;
+using Authentication.Application.Abstractions.Results.Application;
 using Authentication.Application.Features.Application.Register;
 using Authentication.Application.Features.Application.RegisterApplicationRole;
 using Authentication.Application.Features.Applications.AssignApplicationRole;
@@ -27,7 +28,7 @@ public sealed class ApplicationsController : ControllerBase
             command,
             cancellationToken);
 
-        return Ok(result);
+        return this.ToActionResult(result);
     }
 
     [HttpPost("{applicationId:guid}/roles")]
@@ -49,12 +50,13 @@ public sealed class ApplicationsController : ControllerBase
             command,
             cancellationToken);
 
-        return StatusCode(
-            StatusCodes.Status201Created,
-            result);
+        return this.ToActionResult(result);
     }
 
     [HttpPost("{roleId:guid}/users/{userId:guid}")]
+    [ProducesResponseType(
+        typeof(AssignApplicationRoleResult),
+        StatusCodes.Status201Created)]
     public async Task<IActionResult> AssignRole(
         Guid applicationId,
         Guid roleId,
@@ -66,10 +68,10 @@ public sealed class ApplicationsController : ControllerBase
             userId,
             roleId);
 
-        await _sender.Send(
+        var result = await _sender.Send(
             command,
             cancellationToken);
 
-        return NoContent();
+        return this.ToActionResult(result);
     }
 }

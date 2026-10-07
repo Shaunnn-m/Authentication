@@ -4,6 +4,5 @@ using MediatR;
 namespace Authentication.Application.Features.Application.Register;
 
 public sealed record RegisterApplicationCommand(
-    string Name,
-    Guid Application)
+    string Name)
     : IRequest<RegisterApplicationResult>;

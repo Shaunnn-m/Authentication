@@ -11,5 +11,6 @@ public sealed class RegisterApplicationCommandValidator
         RuleFor(x => x.Name)
             .NotEmpty()
             .MaximumLength(100);
+
     }
 }

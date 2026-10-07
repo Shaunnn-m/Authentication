@@ -1,3 +1,5 @@
+using Authentication.Application.Abstractions.Results.Application;
+using Authentication.Application.Common.Results;
 using Authentication.Application.Features.Applications.AssignApplicationRole;
 using Authentication.Application.Interfaces.Application;
 using Authentication.Application.Interfaces.Applications;
@@ -8,7 +10,9 @@ using MediatR;
 namespace Authentication.Application.Features.Applications.Roles.AssignApplicationRole;
 
 public sealed class AssignApplicationRoleCommandHandler
-    : IRequestHandler<AssignApplicationRoleCommand>
+    : IRequestHandler<
+        AssignApplicationRoleCommand,
+        Result<AssignApplicationRoleResult>>
 {
     private readonly IApplicationRepository _applicationRepository;
     private readonly IApplicationRoleRepository _roleRepository;
@@ -30,7 +34,7 @@ public sealed class AssignApplicationRoleCommandHandler
         _userService = userService;
     }
 
-    public async Task Handle(
+    public async Task<Result<AssignApplicationRoleResult>> Handle(
         AssignApplicationRoleCommand request,
         CancellationToken cancellationToken)
     {
@@ -110,5 +114,12 @@ public sealed class AssignApplicationRoleCommandHandler
         await _userRoleRepository.AddAsync(
             userRole,
             cancellationToken);
+
+        return Result<AssignApplicationRoleResult>.Success(
+            new AssignApplicationRoleResult(
+                userRole.ApplicationId,
+                userRole.UserId,
+                userRole.RoleId,
+                userRole.CreatedAt));
     }
 }
