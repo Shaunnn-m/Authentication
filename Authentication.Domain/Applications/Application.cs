@@ -12,6 +12,8 @@ public sealed class Application
 
     public string ClientId { get; private set; } = null!;
 
+    public Guid CreatedByUserId { get; private set; }
+
     public bool IsActive { get; private set; }
 
     public DateTime CreatedAt { get; private set; }
@@ -19,14 +21,16 @@ public sealed class Application
     public DateTime? UpdatedAt { get; private set; }
 
     public static Application Create(
-        string name,
-        string clientId)
+    string name,
+    string clientId,
+    Guid createdByUserId)
     {
         return new Application
         {
             Id = Guid.NewGuid(),
             Name = name,
             ClientId = clientId,
+            CreatedByUserId = createdByUserId,
             IsActive = true,
             CreatedAt = DateTime.UtcNow
         };

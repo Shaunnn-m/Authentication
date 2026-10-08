@@ -33,6 +33,7 @@ public sealed class RefreshTokenCommandHandler
 
         if (validationResult.IsFailure)
         {
+
             return Result<RefreshTokenResponse>.Failure(
                 UserMessages.InvalidRefreshToken);
         }

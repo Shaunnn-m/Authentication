@@ -22,8 +22,6 @@ public sealed class ApplicationUserAccessRepository
         await _context.ApplicationUserAccess.AddAsync(
             access,
             cancellationToken);
-
-        await _context.SaveChangesAsync(cancellationToken);
     }
 
     public async Task<bool> ExistsAsync(

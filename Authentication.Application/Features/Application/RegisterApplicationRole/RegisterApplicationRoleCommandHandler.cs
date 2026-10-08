@@ -2,6 +2,7 @@
 using Authentication.Application.Common.Results;
 using Authentication.Application.Interfaces.Application;
 using Authentication.Application.Interfaces.Applications;
+using Authentication.Application.Interfaces.Common;
 using Authentication.Domain.Applications;
 using MediatR;
 using System;
@@ -27,7 +28,6 @@ namespace Authentication.Application.Features.Application.RegisterApplicationRol
         {
             _applicationRepository = applicationRepository;
             _roleRepository = roleRepository;
-
         }
 
         public async Task<Result<RegisterApplicationRoleResult>> Handle(

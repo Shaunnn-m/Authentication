@@ -53,7 +53,7 @@ public sealed class ApplicationsController : ControllerBase
         return this.ToActionResult(result);
     }
 
-    [HttpPost("{roleId:guid}/users/{userId:guid}")]
+    [HttpPost("{applicationId:guid}/roles/{roleId:guid}/users/{userId:guid}")]
     [ProducesResponseType(
         typeof(AssignApplicationRoleResult),
         StatusCodes.Status201Created)]

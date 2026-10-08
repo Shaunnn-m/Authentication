@@ -16,6 +16,8 @@ public class AuthenticationDbContext
     public DbSet<Domain.Applications.Application> Applications =>
     Set<Domain.Applications.Application>();
     public DbSet<ApplicationRole> ApplicationRoles => Set<ApplicationRole>();
+    public DbSet<ApplicationSettings> ApplicationSettings
+    => Set<ApplicationSettings>();
 
     public DbSet<ApplicationUserRole> ApplicationUserRoles =>
         Set<ApplicationUserRole>();

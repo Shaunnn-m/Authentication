@@ -23,6 +23,11 @@ public sealed class ApplicationConfiguration
 
         builder.HasIndex(x => x.ClientId)
             .IsUnique();
+        
+        builder.Property(x => x.CreatedByUserId)
+            .IsRequired();
+
+        builder.HasIndex(x => x.CreatedByUserId);
 
         builder.Property(x => x.IsActive)
             .IsRequired();

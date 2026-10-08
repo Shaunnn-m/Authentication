@@ -20,8 +20,6 @@ public sealed class ApplicationRepository : IApplicationRepository
         await _context.Applications.AddAsync(
             application,
             cancellationToken);
-
-        await _context.SaveChangesAsync(cancellationToken);
     }
 
     public async Task<ApplicationEntity?> GetByClientIdAsync(

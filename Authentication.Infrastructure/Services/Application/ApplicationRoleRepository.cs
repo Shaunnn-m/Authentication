@@ -28,8 +28,6 @@ namespace Authentication.Infrastructure.Services.Application
             await _dbContext.ApplicationRoles.AddAsync(
                 role,
                 cancellationToken);
-
-            await _dbContext.SaveChangesAsync();
         }
 
         public async Task<ApplicationRole?> GetByIdAsync(

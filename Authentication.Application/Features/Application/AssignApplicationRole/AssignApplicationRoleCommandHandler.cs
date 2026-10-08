@@ -1,4 +1,5 @@
 using Authentication.Application.Abstractions.Results.Application;
+using Authentication.Application.Common.Messages;
 using Authentication.Application.Common.Results;
 using Authentication.Application.Features.Applications.AssignApplicationRole;
 using Authentication.Application.Interfaces.Application;
@@ -44,14 +45,14 @@ public sealed class AssignApplicationRoleCommandHandler
 
         if (application is null)
         {
-            throw new KeyNotFoundException(
-                "Application was not found.");
+            return Result<AssignApplicationRoleResult>.Failure(
+                ApplicationMessages.NotFound);
         }
 
         if (!application.IsActive)
         {
-            throw new InvalidOperationException(
-                "Application is inactive.");
+            return Result<AssignApplicationRoleResult>.Failure(
+                ApplicationMessages.Inactive);
         }
 
         var role = await _roleRepository.GetByIdAsync(
@@ -61,14 +62,14 @@ public sealed class AssignApplicationRoleCommandHandler
         if (role is null ||
             role.ApplicationId != request.ApplicationId)
         {
-            throw new KeyNotFoundException(
-                "Role was not found for the application.");
+            return Result<AssignApplicationRoleResult>.Failure(
+                ApplicationMessages.RoleNotFound);
         }
 
         if (!role.IsActive)
         {
-            throw new InvalidOperationException(
-                "Role is inactive.");
+            return Result<AssignApplicationRoleResult>.Failure(
+                ApplicationMessages.RoleInactive);
         }
 
         var user = await _userService.GetByIdAsync(
@@ -77,8 +78,8 @@ public sealed class AssignApplicationRoleCommandHandler
 
         if (user is null)
         {
-            throw new KeyNotFoundException(
-                "User was not found.");
+            return Result<AssignApplicationRoleResult>.Failure(
+                UserMessages.NotFound);
         }
 
         var hasApplicationAccess =
@@ -89,8 +90,8 @@ public sealed class AssignApplicationRoleCommandHandler
 
         if (!hasApplicationAccess)
         {
-            throw new InvalidOperationException(
-                "User does not have access to the application.");
+            return Result<AssignApplicationRoleResult>.Failure(
+                ApplicationMessages.UserAccessRequired);
         }
 
         var alreadyAssigned =
@@ -102,8 +103,8 @@ public sealed class AssignApplicationRoleCommandHandler
 
         if (alreadyAssigned)
         {
-            throw new InvalidOperationException(
-                "Role is already assigned to the user.");
+            return Result<AssignApplicationRoleResult>.Failure(
+                ApplicationMessages.RoleAlreadyAssigned);
         }
 
         var userRole = ApplicationUserRole.Create(

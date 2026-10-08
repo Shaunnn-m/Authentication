@@ -46,8 +46,6 @@ public class RefreshTokenService : IRefreshTokenService
             refreshToken,
             cancellationToken);
 
-        await _dbContext.SaveChangesAsync(cancellationToken);
-
         return Result<string>.Success(token);
     }
 
@@ -109,8 +107,6 @@ public class RefreshTokenService : IRefreshTokenService
 
         storedToken.Revoke();
 
-        await _dbContext.SaveChangesAsync(
-            cancellationToken);
     }
 
     public async Task<Result<bool>> RevokeAllAsync(
@@ -125,8 +121,6 @@ public class RefreshTokenService : IRefreshTokenService
         {
             token.Revoke();
         }
-
-        await _dbContext.SaveChangesAsync(cancellationToken);
 
         return Result<bool>.Success(true);
     }
