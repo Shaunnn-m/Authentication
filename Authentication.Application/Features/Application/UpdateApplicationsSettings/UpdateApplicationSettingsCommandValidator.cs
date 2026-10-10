@@ -11,7 +11,5 @@ public sealed class UpdateApplicationSettingsCommandValidator
         RuleFor(x => x.ApplicationId)
             .NotEmpty();
 
-        RuleFor(x => x.EmailHandlingMode)
-            .IsInEnum();
     }
 }

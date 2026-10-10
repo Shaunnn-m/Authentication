@@ -63,13 +63,22 @@ public sealed class RegisterApplicationCommandHandler
             application,
             cancellationToken);
 
-        var adminRole = ApplicationRole.Create(
+         var adminRole = ApplicationRole.Create(
             application.Id,
             AppRoles.Admin);
+
+        var customerRole = ApplicationRole.Create(
+            application.Id,
+            AppRoles.ApplicationCustomer);
 
         await _roleRepository.AddAsync(
             adminRole,
             cancellationToken);
+
+        await _roleRepository.AddAsync(
+            customerRole,
+            cancellationToken);
+
 
         var applicationAccess = ApplicationUserAccess.Create(
             application.Id,

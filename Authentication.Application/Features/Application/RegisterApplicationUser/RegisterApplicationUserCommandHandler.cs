@@ -1,6 +1,6 @@
+using Authentication.Application.Common.Authorization;
 using Authentication.Application.Common.Messages;
 using Authentication.Application.Common.Results;
-using Authentication.Application.Abstractions.Identity;
 using Authentication.Application.Interfaces.Application;
 using Authentication.Application.Interfaces.Applications;
 using Authentication.Application.Interfaces.Authentication;
@@ -20,26 +20,29 @@ public sealed class RegisterApplicationUserCommandHandler
     private readonly IUserService _userService;
     private readonly IPasswordService _passwordService;
     private readonly IEmailService _emailService;
-    private readonly IAdminUserService _adminUserService;
     private readonly IApplicationRepository _applicationRepository;
+    private readonly IApplicationRoleRepository _applicationRoleRepository;
     private readonly IApplicationUserAccessRepository _applicationUserAccessRepository;
+    private readonly IApplicationUserRoleRepository _applicationUserRoleRepository;
     private readonly IApplicationSettingsRepository _applicationSettingsRepository;
 
     public RegisterApplicationUserCommandHandler(
         IUserService userService,
         IPasswordService passwordService,
         IEmailService emailService,
-        IAdminUserService adminUserService,
         IApplicationRepository applicationRepository,
+        IApplicationRoleRepository applicationRoleRepository,
         IApplicationUserAccessRepository applicationUserAccessRepository,
+        IApplicationUserRoleRepository applicationUserRoleRepository,
         IApplicationSettingsRepository applicationSettingsRepository)
     {
         _userService = userService;
         _passwordService = passwordService;
         _emailService = emailService;
-        _adminUserService = adminUserService;
         _applicationRepository = applicationRepository;
+        _applicationRoleRepository = applicationRoleRepository;
         _applicationUserAccessRepository = applicationUserAccessRepository;
+        _applicationUserRoleRepository = applicationUserRoleRepository;
         _applicationSettingsRepository = applicationSettingsRepository;
     }
 
@@ -61,6 +64,23 @@ public sealed class RegisterApplicationUserCommandHandler
         {
             return Result<RegisterApplicationUserResponse>.Failure(
                 ApplicationMessages.Inactive);
+        }
+
+        var role = await _applicationRoleRepository.GetByNameAsync(
+            application.Id,
+            AppRoles.ApplicationCustomer,
+            cancellationToken);
+
+        if (role is null || role.ApplicationId != application.Id)
+        {
+            return Result<RegisterApplicationUserResponse>.Failure(
+                ApplicationMessages.RoleNotFound);
+        }
+
+        if (!role.IsActive)
+        {
+            return Result<RegisterApplicationUserResponse>.Failure(
+                ApplicationMessages.RoleInactive);
         }
 
         var settings = await _applicationSettingsRepository.GetByApplicationIdAsync(
@@ -110,29 +130,10 @@ public sealed class RegisterApplicationUserCommandHandler
             }
 
             userId = credentialsResult.Value;
-
-            var existingAccess = await _applicationUserAccessRepository.GetAsync(
-                application.Id,
-                userId,
-                cancellationToken);
-
-            if (existingAccess is not null)
-            {
-                if (!existingAccess.IsActive)
-                {
-                    existingAccess.Activate();
-                }
-
-                return Result<RegisterApplicationUserResponse>.Success(
-                    new RegisterApplicationUserResponse(
-                        userId,
-                        request.Email));
-            }
         }
         else
         {
-            var isActive = settings.EmailHandlingMode !=
-                EmailHandlingMode.PlatformManaged;
+            var isActive = !settings.IsEmailVerificationEnabled;
 
             var createResult = await _userService.CreateAsync(
                 request.FirstName,
@@ -149,17 +150,6 @@ public sealed class RegisterApplicationUserCommandHandler
             }
 
             userId = createResult.Value;
-
-            var roleResult = await _adminUserService.AddToRoleAsync(
-                userId,
-                UserRole.Customer,
-                cancellationToken);
-
-            if (roleResult.IsFailure)
-            {
-                return Result<RegisterApplicationUserResponse>.Failure(
-                    roleResult.Error!);
-            }
 
             if (settings.EmailHandlingMode == EmailHandlingMode.PlatformManaged)
             {
@@ -178,9 +168,38 @@ public sealed class RegisterApplicationUserCommandHandler
             }
         }
 
-        await _applicationUserAccessRepository.AddAsync(
-            ApplicationUserAccess.Create(application.Id, userId),
+        var existingAccess = await _applicationUserAccessRepository.GetAsync(
+            application.Id,
+            userId,
             cancellationToken);
+
+        if (existingAccess is null)
+        {
+            await _applicationUserAccessRepository.AddAsync(
+                ApplicationUserAccess.Create(application.Id, userId),
+                cancellationToken);
+        }
+        else if (!existingAccess.IsActive)
+        {
+            existingAccess.Activate();
+        }
+
+        var roleAlreadyAssigned =
+            await _applicationUserRoleRepository.ExistsAsync(
+                application.Id,
+                userId,
+                role.Id,
+                cancellationToken);
+
+        if (!roleAlreadyAssigned)
+        {
+            await _applicationUserRoleRepository.AddAsync(
+                ApplicationUserRole.Create(
+                    application.Id,
+                    userId,
+                    role.Id),
+                cancellationToken);
+        }
 
         return Result<RegisterApplicationUserResponse>.Success(
             new RegisterApplicationUserResponse(

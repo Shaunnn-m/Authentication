@@ -43,5 +43,11 @@ namespace Authentication.Domain.Applications
             IsActive = false;
             UpdatedAt = DateTime.UtcNow;
         }
+
+        public void Rename(string name)
+        {
+            Name = name;
+            UpdatedAt = DateTime.UtcNow;
+        }
     }
 }

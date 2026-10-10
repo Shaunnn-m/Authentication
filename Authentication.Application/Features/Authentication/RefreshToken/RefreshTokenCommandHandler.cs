@@ -31,7 +31,7 @@ public sealed class RefreshTokenCommandHandler
             request.RefreshToken,
             cancellationToken);
 
-        if (validationResult.IsFailure)
+        if (validationResult.IsFailure || validationResult.Value is null)
         {
 
             return Result<RefreshTokenResponse>.Failure(

@@ -34,9 +34,8 @@ namespace Authentication.Application.Features.Application.UpdateApplicationsSett
             }
 
             settings.Update(
-                request.EmailVerificationEnabled,
-                request.PasswordResetEnabled,
-                request.AllowRegistration);
+                request.settings.EmailHandlingMode,
+                request.settings.EnableEmailVerification);
 
             return Result<UpdateApplicationSettingsResponse>.Success(
                 new UpdateApplicationSettingsResponse(

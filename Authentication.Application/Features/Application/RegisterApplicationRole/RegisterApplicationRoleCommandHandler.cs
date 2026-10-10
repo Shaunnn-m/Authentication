@@ -1,14 +1,9 @@
-﻿using Authentication.Application.Common.Results;
+using Authentication.Application.Common.Results;
+using Authentication.Application.Common.Messages;
 using Authentication.Application.Interfaces.Application;
 using Authentication.Application.Interfaces.Applications;
-using Authentication.Application.Interfaces.Common;
 using Authentication.Domain.Applications;
 using MediatR;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Authentication.Application.Features.Application.RegisterApplicationRole
 {
@@ -39,30 +34,31 @@ namespace Authentication.Application.Features.Application.RegisterApplicationRol
 
             if (application is null)
             {
-                throw new KeyNotFoundException(
-                    "Application was not found.");
+                return Result<RegisterApplicationRoleResponse>.Failure(
+                    ApplicationMessages.NotFound);
             }
 
             if (!application.IsActive)
             {
-                throw new InvalidOperationException(
-                    "Application is inactive.");
+                return Result<RegisterApplicationRoleResponse>.Failure(
+                    ApplicationMessages.Inactive);
             }
 
+            var roleName = request.Name.Trim();
             var roleExists = await _roleRepository.ExistsAsync(
                 request.ApplicationId,
-                request.Name,
+                roleName,
                 cancellationToken);
 
             if (roleExists)
             {
-                throw new InvalidOperationException(
-                    "A role with this name already exists for the application.");
+                return Result<RegisterApplicationRoleResponse>.Failure(
+                    ApplicationMessages.RoleNameAlreadyExists);
             }
 
             var role = ApplicationRole.Create(
                 request.ApplicationId,
-                request.Name.Trim());
+                roleName);
 
             await _roleRepository.AddAsync(
                 role,

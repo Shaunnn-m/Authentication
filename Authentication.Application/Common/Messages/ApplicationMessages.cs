@@ -54,4 +54,10 @@ public static class ApplicationMessages
             "Application.RoleAlreadyAssigned",
             "The role is already assigned to the user.",
             ErrorType.Conflict);
+
+    public static readonly ResultError RoleNameAlreadyExists =
+        new(
+            "Application.RoleNameAlreadyExists",
+            "A role with this name already exists for the application.",
+            ErrorType.Conflict);
 }
