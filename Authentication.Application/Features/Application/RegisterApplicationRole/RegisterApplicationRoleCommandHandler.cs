@@ -1,5 +1,4 @@
-﻿using Authentication.Application.Abstractions.Results.Application;
-using Authentication.Application.Common.Results;
+﻿using Authentication.Application.Common.Results;
 using Authentication.Application.Interfaces.Application;
 using Authentication.Application.Interfaces.Applications;
 using Authentication.Application.Interfaces.Common;
@@ -16,7 +15,7 @@ namespace Authentication.Application.Features.Application.RegisterApplicationRol
     public sealed class RegisterApplicationRoleCommandHandler
     : IRequestHandler<
         RegisterApplicationRoleCommand,
-        Result<RegisterApplicationRoleResult>>
+        Result<RegisterApplicationRoleResponse>>
     {
         private readonly IApplicationRepository _applicationRepository;
         private readonly IApplicationRoleRepository _roleRepository;
@@ -30,7 +29,7 @@ namespace Authentication.Application.Features.Application.RegisterApplicationRol
             _roleRepository = roleRepository;
         }
 
-        public async Task<Result<RegisterApplicationRoleResult>> Handle(
+        public async Task<Result<RegisterApplicationRoleResponse>> Handle(
             RegisterApplicationRoleCommand request,
             CancellationToken cancellationToken)
         {
@@ -69,8 +68,8 @@ namespace Authentication.Application.Features.Application.RegisterApplicationRol
                 role,
                 cancellationToken);
 
-            return Result<RegisterApplicationRoleResult>.Success(
-                new RegisterApplicationRoleResult(
+            return Result<RegisterApplicationRoleResponse>.Success(
+                new RegisterApplicationRoleResponse(
                     role.Id,
                     role.ApplicationId,
                     role.Name));

@@ -133,10 +133,15 @@ builder.Services.AddAuthorization(options =>
         policy =>
         {
             policy.RequireAuthenticatedUser();
-
             policy.AddRequirements(
                 new ApplicationAccessRequirement());
         });
+
+    options.AddPolicy("ApplicationAdmin", policy =>
+    {
+        policy.RequireAuthenticatedUser();
+        policy.AddRequirements(new ApplicationAdminRequirement());
+    });
 });
 
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();

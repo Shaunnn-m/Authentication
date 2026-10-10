@@ -1,10 +1,17 @@
 using Authentication.Application.Common.Results;
-using Authentication.Application.Common.Results.Applications;
 using Authentication.Application.Interfaces.Common;
+using Authentication.Domain.Enums;
 using MediatR;
 
 namespace Authentication.Application.Features.Application.Register;
 
 public sealed record RegisterApplicationCommand(
-    string Name)
-    : IRequest<Result<RegisterApplicationResult>>, IUnitOfWorkCommand;
+    string Name,
+    RegisterApplicationSettingsRequest? Settings = null)
+    : IRequest<Result<RegisterApplicationResponse>>, IUnitOfWorkCommand;
+
+public sealed record RegisterApplicationSettingsRequest
+{
+    public EmailHandlingMode? EmailHandlingMode { get; init; }
+    public bool? EnableEmailVerification { get; init; }
+}

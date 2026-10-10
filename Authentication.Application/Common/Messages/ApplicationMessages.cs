@@ -1,6 +1,7 @@
 using Authentication.Application.Abstractions.Results;
 using Authentication.Application.Common.Results;
 using System.Diagnostics;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Authentication.Application.Common.Messages;
 
@@ -12,11 +13,23 @@ public static class ApplicationMessages
             "The application was not found.",
             ErrorType.NotFound);
 
+    public static readonly ResultError SettingsNotFound =
+        new(
+            "Application.SettingsNotFound",
+            "Application settings were not found.",
+            ErrorType.NotFound);
+
     public static readonly ResultError Inactive =
         new(
             "Application.Inactive",
             "The application is inactive.",
             ErrorType.Forbidden);
+
+    public static readonly ResultError RegistrationDisabled =
+        new(
+        "Application.RegistrationDisabled",
+        "Registration is disabled for this application.",
+         ErrorType.Forbidden);
 
     public static readonly ResultError RoleNotFound =
         new(

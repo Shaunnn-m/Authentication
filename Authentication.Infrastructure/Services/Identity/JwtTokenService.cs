@@ -20,17 +20,24 @@ public class JwtTokenService : ITokenService
     public AccessTokenResult GenerateAccessToken(
         Guid userId,
         string email,
-        Guid applicationId,
-        IEnumerable<string> roles)
+        IEnumerable<string> roles,
+        Guid? applicationId = null
+        )
     {
         var claims = new List<Claim>
         {
             new(JwtRegisteredClaimNames.Sub, userId.ToString()),
             new(JwtRegisteredClaimNames.Email, email),
             new(ClaimTypes.NameIdentifier, userId.ToString()),
-            new(ClaimTypes.Email, email),
-            new("application_id", applicationId.ToString())
+            new(ClaimTypes.Email, email)
         };
+
+        if (applicationId.HasValue)
+        {
+            claims.Add(new Claim(
+                "application_id",
+                applicationId.Value.ToString()));
+        }
 
         claims.AddRange(
             roles.Select(role => new Claim(ClaimTypes.Role, role)));

@@ -9,8 +9,6 @@ using Authentication.Application.Interfaces.Identity;
 using Authentication.Infrastructure.Identity;
 using Authentication.Infrastructure.Persistence;
 using Authentication.Infrastructure.Persistence.Repositories;
-using Authentication.Infrastructure.Repositories;
-using Authentication.Infrastructure.Services.Application;
 using Authentication.Infrastructure.Services.Common;
 using Authentication.Infrastructure.Services.Email;
 using Authentication.Infrastructure.Services.Identity;
@@ -78,6 +76,7 @@ public static class DependencyInjection
         services.AddScoped<IApplicationRepository, ApplicationRepository>();
         services.AddScoped<IUnitOfWork, UnitOfWork>();
         services.AddScoped<IApplicationRoleRepository, ApplicationRoleRepository>();
+        services.AddScoped<IApplicationSettingsRepository, ApplicationSettingsRepository>();
 
         services.Configure<JwtOptions>(
             configuration.GetSection(JwtOptions.SectionName));

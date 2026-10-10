@@ -1,4 +1,3 @@
-using Authentication.Application.Abstractions.Results.Application;
 using Authentication.Application.Common.Messages;
 using Authentication.Application.Common.Results;
 using Authentication.Application.Features.Applications.AssignApplicationRole;
@@ -13,7 +12,7 @@ namespace Authentication.Application.Features.Applications.Roles.AssignApplicati
 public sealed class AssignApplicationRoleCommandHandler
     : IRequestHandler<
         AssignApplicationRoleCommand,
-        Result<AssignApplicationRoleResult>>
+        Result<AssignApplicationRoleResponse>>
 {
     private readonly IApplicationRepository _applicationRepository;
     private readonly IApplicationRoleRepository _roleRepository;
@@ -35,7 +34,7 @@ public sealed class AssignApplicationRoleCommandHandler
         _userService = userService;
     }
 
-    public async Task<Result<AssignApplicationRoleResult>> Handle(
+    public async Task<Result<AssignApplicationRoleResponse>> Handle(
         AssignApplicationRoleCommand request,
         CancellationToken cancellationToken)
     {
@@ -45,13 +44,13 @@ public sealed class AssignApplicationRoleCommandHandler
 
         if (application is null)
         {
-            return Result<AssignApplicationRoleResult>.Failure(
+            return Result<AssignApplicationRoleResponse>.Failure(
                 ApplicationMessages.NotFound);
         }
 
         if (!application.IsActive)
         {
-            return Result<AssignApplicationRoleResult>.Failure(
+            return Result<AssignApplicationRoleResponse>.Failure(
                 ApplicationMessages.Inactive);
         }
 
@@ -62,13 +61,13 @@ public sealed class AssignApplicationRoleCommandHandler
         if (role is null ||
             role.ApplicationId != request.ApplicationId)
         {
-            return Result<AssignApplicationRoleResult>.Failure(
+            return Result<AssignApplicationRoleResponse>.Failure(
                 ApplicationMessages.RoleNotFound);
         }
 
         if (!role.IsActive)
         {
-            return Result<AssignApplicationRoleResult>.Failure(
+            return Result<AssignApplicationRoleResponse>.Failure(
                 ApplicationMessages.RoleInactive);
         }
 
@@ -78,7 +77,7 @@ public sealed class AssignApplicationRoleCommandHandler
 
         if (user is null)
         {
-            return Result<AssignApplicationRoleResult>.Failure(
+            return Result<AssignApplicationRoleResponse>.Failure(
                 UserMessages.NotFound);
         }
 
@@ -90,7 +89,7 @@ public sealed class AssignApplicationRoleCommandHandler
 
         if (!hasApplicationAccess)
         {
-            return Result<AssignApplicationRoleResult>.Failure(
+            return Result<AssignApplicationRoleResponse>.Failure(
                 ApplicationMessages.UserAccessRequired);
         }
 
@@ -103,7 +102,7 @@ public sealed class AssignApplicationRoleCommandHandler
 
         if (alreadyAssigned)
         {
-            return Result<AssignApplicationRoleResult>.Failure(
+            return Result<AssignApplicationRoleResponse>.Failure(
                 ApplicationMessages.RoleAlreadyAssigned);
         }
 
@@ -116,8 +115,8 @@ public sealed class AssignApplicationRoleCommandHandler
             userRole,
             cancellationToken);
 
-        return Result<AssignApplicationRoleResult>.Success(
-            new AssignApplicationRoleResult(
+        return Result<AssignApplicationRoleResponse>.Success(
+            new AssignApplicationRoleResponse(
                 userRole.ApplicationId,
                 userRole.UserId,
                 userRole.RoleId,

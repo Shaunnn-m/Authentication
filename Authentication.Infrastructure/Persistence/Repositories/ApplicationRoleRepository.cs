@@ -8,7 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Authentication.Infrastructure.Services.Application
+namespace Authentication.Infrastructure.Persistence.Repositories
 {
     public sealed class ApplicationRoleRepository
     : IApplicationRoleRepository

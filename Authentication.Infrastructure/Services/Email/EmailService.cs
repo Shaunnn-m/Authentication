@@ -3,9 +3,12 @@ using Authentication.Application.Abstractions.Email;
 using Authentication.Application.Abstractions.Results.Email;
 using Authentication.Application.Common.Messages;
 using Authentication.Application.Common.Results;
+using Authentication.Application.Interfaces.Application;
 using Authentication.Application.Interfaces.Authentication;
 using Authentication.Application.Interfaces.Email;
 using Authentication.Application.Interfaces.Identity;
+using Authentication.Domain.Applications;
+using Authentication.Domain.Enums;
 using Authentication.Infrastructure.Identity;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
@@ -18,12 +21,13 @@ namespace Authentication.Infrastructure.Services.Email
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IUserService _userService;
 
+        private readonly IApplicationSettingsRepository _applicationSettingsRepository;
+
         private readonly SmtpEmailService _smtpEmailService;
         private readonly IEmailTemplateService _emailTemplateService;
         private readonly IAuthenticationLinkService _authenticationLinkService;
 
         private readonly IRefreshTokenService _refreshTokenService;
-        private readonly AuthenticationEmailOptions _options;
         private readonly ILogger<EmailService> _logger;
 
         public EmailService(
@@ -33,7 +37,7 @@ namespace Authentication.Infrastructure.Services.Email
             IEmailTemplateService emailTemplateService,
             IRefreshTokenService refreshTokenService,
             SmtpEmailService smtpEmailService,
-            IOptions<AuthenticationEmailOptions> options,
+            IApplicationSettingsRepository applicationSettingsRepository,
             ILogger<EmailService> logger)
         {
             _userManager = userManager;
@@ -42,7 +46,7 @@ namespace Authentication.Infrastructure.Services.Email
             _emailTemplateService = emailTemplateService;
             _refreshTokenService = refreshTokenService;
             _smtpEmailService = smtpEmailService;
-            _options = options.Value;
+            _applicationSettingsRepository = applicationSettingsRepository;
             _logger = logger;
         }
 
@@ -56,14 +60,26 @@ namespace Authentication.Infrastructure.Services.Email
         }
 
         public async Task<Result<EmailConfirmationResult?>> HandleAsync(
-            Guid userId,
-            string firstName,
-            string email,
-            CancellationToken cancellationToken = default)
+         Guid userId,
+         string firstName,
+         string email,
+         Guid? applicationId = null,
+         CancellationToken cancellationToken = default)
         {
-            if (!_options.Enabled)
+            ApplicationSettings? applicationSettings = null;
+
+            if (applicationId.HasValue)
             {
-                return Result<EmailConfirmationResult?>.Success(null);
+                applicationSettings =
+                    await _applicationSettingsRepository.GetByApplicationIdAsync(
+                        applicationId.Value,
+                        cancellationToken);
+
+                if (applicationSettings is null)
+                {
+                    return Result<EmailConfirmationResult?>.Failure(
+                        ApplicationMessages.SettingsNotFound);
+                }
             }
 
             var tokenResult =
@@ -88,32 +104,52 @@ namespace Authentication.Infrastructure.Services.Email
                 tokenResult.Value!,
                 confirmationLink);
 
-            if (_options.Mode == AuthenticationEmailMode.AuthenticationService)
+            // No ApplicationId means platform-managed email.
+            var platformManaged =
+                applicationSettings is null ||
+                applicationSettings.EmailHandlingMode ==
+                    EmailHandlingMode.PlatformManaged;
+
+            if (platformManaged)
             {
-                var body = _emailTemplateService
-               .RenderRegistrationConfirmation(
-                   firstName,
-                   confirmationLink);
+                var body = _emailTemplateService.RenderRegistrationConfirmation(
+                    firstName,
+                    confirmationLink);
 
                 var emailMessage = new EmailMessage(
                     email,
                     "Confirm your account",
                     body);
 
-                await SendAsync(
-                    emailMessage,
-                    cancellationToken);
+                await SendAsync(emailMessage, cancellationToken);
             }
 
             return Result<EmailConfirmationResult?>.Success(
                 confirmationResult);
         }
 
-        public async  Task<Result<EmailChangeResult?>> RequestChangeAsync(
+        public async Task<Result<EmailChangeResult?>> RequestChangeAsync(
         Guid userId,
         string newEmail,
+        Guid? applicationId = null,
         CancellationToken cancellationToken = default)
         {
+            ApplicationSettings? applicationSettings = null;
+
+            if (applicationId.HasValue)
+            {
+                applicationSettings =
+                    await _applicationSettingsRepository.GetByApplicationIdAsync(
+                        applicationId.Value,
+                        cancellationToken);
+
+                if (applicationSettings is null)
+                {
+                    return Result<EmailChangeResult?>.Failure(
+                        ApplicationMessages.SettingsNotFound);
+                }
+            }
+
             var user = await _userManager.FindByIdAsync(userId.ToString());
 
             if (user is null)
@@ -133,11 +169,9 @@ namespace Authentication.Infrastructure.Services.Email
                     UserMessages.EmailAlreadyInUse);
             }
 
-            var existingUser =
-                await _userManager.FindByEmailAsync(newEmail);
+            var existingUser = await _userManager.FindByEmailAsync(newEmail);
 
-            if (existingUser is not null &&
-                existingUser.Id != user.Id)
+            if (existingUser is not null && existingUser.Id != user.Id)
             {
                 return Result<EmailChangeResult?>.Failure(
                     UserMessages.EmailAlreadyInUse);
@@ -150,29 +184,32 @@ namespace Authentication.Infrastructure.Services.Email
             var link = _authenticationLinkService.CreateEmailChangeLink(
                 user.Id,
                 newEmail,
-                token); 
+                token);
 
             var emailChangeResult = new EmailChangeResult(
                 user.Id,
                 newEmail,
                 link);
-            
-            if (_options.Mode == AuthenticationEmailMode.AuthenticationService)
+
+            // No ApplicationId means platform-managed email.
+            var platformManaged =
+                applicationSettings is null ||
+                applicationSettings.EmailHandlingMode ==
+                    EmailHandlingMode.PlatformManaged;
+
+            if (platformManaged)
             {
-                var body = _emailTemplateService
-                    .RenderEmailChange(
-                        user.FirstName,
-                        newEmail,
-                        link);
+                var body = _emailTemplateService.RenderEmailChange(
+                    user.FirstName,
+                    newEmail,
+                    link);
 
                 var emailMessage = new EmailMessage(
                     newEmail,
-                    "Confirm your account",
+                    "Confirm your email change",
                     body);
 
-                await SendAsync(
-                    emailMessage,
-                    cancellationToken);
+                await SendAsync(emailMessage, cancellationToken);
             }
 
             return Result<EmailChangeResult?>.Success(emailChangeResult);

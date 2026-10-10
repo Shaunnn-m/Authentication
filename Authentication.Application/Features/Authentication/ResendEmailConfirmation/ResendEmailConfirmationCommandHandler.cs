@@ -1,8 +1,10 @@
 using Authentication.Application.Common.Messages;
 using Authentication.Application.Common.Results;
+using Authentication.Application.Interfaces.Application;
 using Authentication.Application.Interfaces.Authentication;
 using Authentication.Application.Interfaces.Email;
 using Authentication.Application.Interfaces.Identity;
+using Authentication.Domain.Enums;
 using MediatR;
 
 namespace Authentication.Application.Features.Authentication.ResendEmailConfirmation;
@@ -14,20 +16,32 @@ public sealed class ResendEmailConfirmationCommandHandler
 {
     private readonly IEmailService _emailService;
     private readonly IUserService _userService;
+    private readonly IApplicationSettingsRepository _applicationSettingsRepository;
 
     public ResendEmailConfirmationCommandHandler(
         IEmailService emailService,
-        IUserService userService)
+        IUserService userService,
+        IApplicationSettingsRepository applicationSettingsRepository)
     {
         _emailService = emailService;
         _userService = userService;
+        _applicationSettingsRepository = applicationSettingsRepository;
     }
 
     public async Task<Result<ResendEmailConfirmationResponse>> Handle(
         ResendEmailConfirmationCommand request,
         CancellationToken cancellationToken)
     {
-         var userResult = await _userService.GetByEmailAsync(
+        var settings = await _applicationSettingsRepository.GetByApplicationIdAsync(
+            request.ApplicationId,
+            cancellationToken); 
+
+        if (settings == null) {
+            return Result<ResendEmailConfirmationResponse>.Failure(
+                ApplicationMessages.NotFound);
+        }
+
+        var userResult = await _userService.GetByEmailAsync(
             request.Email,
             cancellationToken);
 
@@ -39,7 +53,7 @@ public sealed class ResendEmailConfirmationCommandHandler
 
         var user = userResult.Value;
 
-                var confirmedResult =
+        var confirmedResult =
             await _userService.IsEmailConfirmedAsync(
                 user.UserId,
                 cancellationToken);
@@ -56,17 +70,21 @@ public sealed class ResendEmailConfirmationCommandHandler
                 UserMessages.EmailAlreadyConfirmed);
         }
 
-        var confirmationResult =
-            await _emailService.HandleAsync(
-                user.UserId,
-                user.FirstName,
-                user.Email,
-                cancellationToken);
-
-        if (confirmationResult.IsFailure)
+        if (settings.EmailHandlingMode == EmailHandlingMode.PlatformManaged)
         {
-            return Result<ResendEmailConfirmationResponse>.Failure(
-                confirmationResult.Error!);
+            var confirmationResult =
+                await _emailService.HandleAsync(
+                    user.UserId,
+                    request.ApplicationId,
+                    user.FirstName,
+                    user.Email,
+                    cancellationToken);
+
+            if (confirmationResult.IsFailure)
+            {
+                return Result<ResendEmailConfirmationResponse>.Failure(
+                    confirmationResult.Error!);
+            }
         }
 
         return Result<ResendEmailConfirmationResponse>.Success(

@@ -36,6 +36,7 @@ public sealed class UserService : IUserService
         string lastName,
         string email,
         string password,
+        bool isActive = false,
         CancellationToken cancellationToken = default)
     {
         var user = new ApplicationUser
@@ -43,7 +44,8 @@ public sealed class UserService : IUserService
             UserName = email,
             Email = email,
             FirstName = firstName,
-            LastName = lastName
+            LastName = lastName,
+            IsActive = isActive
         };
 
         var result = await _userManager.CreateAsync(

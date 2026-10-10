@@ -6,6 +6,8 @@ using Authentication.Application.Interfaces.Email;
 using Authentication.Application.Abstractions.Identity;
 using Authentication.Application.Interfaces.Applications;
 using Authentication.Domain.Applications;
+using Authentication.Application.Interfaces.Application;
+using Authentication.Domain.Enums;
 
 namespace Authentication.Application.Features.Authentication.Register;
 
@@ -17,12 +19,14 @@ public sealed class RegisterCommandHandler
     private readonly IAdminUserService _adminUserService;
     private readonly IApplicationRepository _applicationRepository;
     private readonly IApplicationUserAccessRepository _applicationUserAccessRepository;
+    private readonly IApplicationSettingsRepository _applicationSettingsRepository;
 
     public RegisterCommandHandler(IUserService userService, 
         IEmailService emailService,
         IAdminUserService adminUserService,
         IApplicationRepository applicationRepository,
-        IApplicationUserAccessRepository applicationUserAccessRepository)
+        IApplicationUserAccessRepository applicationUserAccessRepository,
+        IApplicationSettingsRepository applicationSettingsRepository)
 
     {
         _userService = userService;
@@ -30,6 +34,7 @@ public sealed class RegisterCommandHandler
         _adminUserService = adminUserService;
         _applicationRepository = applicationRepository;
         _applicationUserAccessRepository = applicationUserAccessRepository;
+        _applicationSettingsRepository = applicationSettingsRepository;
     }
 
     public async Task<Result<RegisterResponse>> Handle(
@@ -45,6 +50,10 @@ public sealed class RegisterCommandHandler
             return Result<RegisterResponse>.Failure(
                 ApplicationMessages.NotFound);
         }
+
+        var settings = await _applicationSettingsRepository.GetByApplicationIdAsync(
+        application.Id,
+        cancellationToken);
 
         if (!application.IsActive)
         {
@@ -62,11 +71,14 @@ public sealed class RegisterCommandHandler
                 UserMessages.AlreadyExists);
         }
 
+        var isActive = settings.EmailHandlingMode == EmailHandlingMode.PlatformManaged ? false : true;
+
         var result = await _userService.CreateAsync(
             request.FirstName,
             request.LastName,
             request.Email,
             request.Password,
+            isActive,
             cancellationToken);
 
         if (result.IsFailure)
@@ -86,17 +98,20 @@ public sealed class RegisterCommandHandler
                 roleResult.Error!);
         }
 
-        var confirmationResult =
-            await _emailService.HandleAsync(
+        if (settings.EmailHandlingMode == EmailHandlingMode.PlatformManaged)
+        {
+            var confirmationResult = await _emailService.HandleAsync(
                 result.Value,
+                application.Id, 
                 request.FirstName,
                 request.Email,
                 cancellationToken);
 
-        if (confirmationResult.IsFailure)
-        {
-            return Result<RegisterResponse>.Failure(
-                confirmationResult.Error!);
+            if (confirmationResult.IsFailure)
+            {
+                return Result<RegisterResponse>.Failure(
+                    confirmationResult.Error!);
+            }
         }
 
         var applicationAccess = ApplicationUserAccess.Create(

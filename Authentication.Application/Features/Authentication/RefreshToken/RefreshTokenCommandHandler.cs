@@ -39,7 +39,6 @@ public sealed class RefreshTokenCommandHandler
         }
 
         var userId = validationResult.Value.UserId;
-        var applicationId = validationResult.Value.ApplicationId;
 
         var userResult = await _userService.GetByIdAsync(
             userId,
@@ -82,8 +81,8 @@ public sealed class RefreshTokenCommandHandler
         var accessTokenResult = _tokenService.GenerateAccessToken(
             userId,
             userEmail,
-            applicationId,
-            rolesResult.Value ?? Array.Empty<string>());
+            rolesResult.Value ?? Array.Empty<string>(),
+            null);
 
         return Result<RefreshTokenResponse>.Success(
             new RefreshTokenResponse(

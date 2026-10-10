@@ -3,7 +3,7 @@ using Authentication.Domain.Applications;
 using Authentication.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 
-namespace Authentication.Infrastructure.Repositories;
+namespace Authentication.Infrastructure.Persistence.Repositories;
 
 public sealed class ApplicationUserRoleRepository
     : IApplicationUserRoleRepository

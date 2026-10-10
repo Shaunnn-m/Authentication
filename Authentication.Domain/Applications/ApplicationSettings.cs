@@ -1,3 +1,5 @@
+using Authentication.Domain.Enums;
+
 namespace Authentication.Domain.Applications;
 
 public sealed class ApplicationSettings
@@ -7,37 +9,54 @@ public sealed class ApplicationSettings
     public Guid ApplicationId { get; private set; }
 
     // Email settings
-    public bool EmailVerificationEnabled { get; private set; }
-    public bool PasswordResetEnabled { get; private set; }
-
-    // Account settings
-    public bool AllowRegistration { get; private set; }
+    public EmailHandlingMode EmailHandlingMode { get; private set; }
+    public bool IsEmailVerificationEnabled = true;
 
     // Future settings can be added here as the platform grows.
 
     public DateTime CreatedAt { get; private set; }
     public DateTime? UpdatedAt { get; private set; }
 
-    public static ApplicationSettings CreateDefault(Guid applicationId)
+    public static ApplicationSettings Create(
+       Guid applicationId,
+       bool isEmailVerificationEnabled = false,
+       EmailHandlingMode emailHandlingMode = EmailHandlingMode.PlatformManaged)
     {
+        if (applicationId == Guid.Empty)
+        {
+            throw new ArgumentException(
+                "Application ID is required.",
+                nameof(applicationId));
+        }
+
+        if (!Enum.IsDefined(emailHandlingMode))
+        {
+            throw new ArgumentOutOfRangeException(
+                nameof(emailHandlingMode),
+                "Email handling mode is invalid.");
+        }
+
         return new ApplicationSettings
         {
             ApplicationId = applicationId,
-            EmailVerificationEnabled = true,
-            PasswordResetEnabled = true,
-            AllowRegistration = true,
+            EmailHandlingMode = emailHandlingMode,
+            IsEmailVerificationEnabled = isEmailVerificationEnabled,
             CreatedAt = DateTime.UtcNow
         };
     }
 
-    public void Update(
-        bool emailVerificationEnabled,
-        bool passwordResetEnabled,
-        bool allowRegistration)
+    public void Update(EmailHandlingMode emailHandlingMode,
+        bool isEmailVerificationEnabled)
     {
-        EmailVerificationEnabled = emailVerificationEnabled;
-        PasswordResetEnabled = passwordResetEnabled;
-        AllowRegistration = allowRegistration;
+        if (!Enum.IsDefined(emailHandlingMode))
+        {
+            throw new ArgumentOutOfRangeException(
+                nameof(emailHandlingMode),
+                "Email handling mode is invalid.");
+        }
+
+        EmailHandlingMode = emailHandlingMode;
+        IsEmailVerificationEnabled = isEmailVerificationEnabled;
         UpdatedAt = DateTime.UtcNow;
     }
 }
