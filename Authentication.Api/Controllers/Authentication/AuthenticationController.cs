@@ -26,8 +26,9 @@ public sealed class AuthenticationController : ControllerBase
     {
         _sender = sender;
     }
-
+    
     [HttpPost("register")]
+    [AllowAnonymous]
     public async Task<IActionResult> Register(
         [FromBody] RegisterCommand command,
         CancellationToken cancellationToken)

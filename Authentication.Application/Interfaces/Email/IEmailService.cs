@@ -12,16 +12,16 @@ public interface IEmailService
 
     Task<Result<EmailConfirmationResult?>> HandleAsync(
         Guid userId,
-        Guid ApplicationId,
         string firstName,
         string email,
+        Guid? applicationId = null,
         CancellationToken cancellationToken = default);
 
     Task<Result<EmailChangeResult?>> RequestChangeAsync(
-    Guid userId,
-    Guid ApplicationId,
-    string newEmail,
-    CancellationToken cancellationToken = default);
+        Guid userId,
+        string newEmail,
+        Guid? applicationId = null,
+        CancellationToken cancellationToken = default);
 
     Task<Result<bool>> ConfirmChangeAsync(
         Guid userId,

@@ -50,4 +50,20 @@ public sealed class ApplicationUserAccessRepository
                     x.UserId == userId,
                 cancellationToken);
     }
+
+    public async Task<IReadOnlyList<string>> GetActiveApplicationNamesByUserIdAsync(
+        Guid userId,
+        CancellationToken cancellationToken = default)
+    {
+        return await (
+            from access in _context.ApplicationUserAccess
+            join application in _context.Applications
+                on access.ApplicationId equals application.Id
+            where access.UserId == userId &&
+                  access.IsActive &&
+                  application.IsActive
+            select application.Name)
+            .Distinct()
+            .ToListAsync(cancellationToken);
+    }
 }

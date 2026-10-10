@@ -36,7 +36,7 @@ public sealed class ChangeEmailCommandHandler
             await _emailChangeService.RequestChangeAsync(
                 _currentUser.UserId.Value,
                 request.NewEmail,
-                cancellationToken);
+                cancellationToken: cancellationToken);
 
         if (result.IsFailure)
         {

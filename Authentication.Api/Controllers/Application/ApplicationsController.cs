@@ -2,6 +2,7 @@
 using Authentication.Application.Abstractions.Results;
 using Authentication.Application.Features.Application.QueryApplicationsSettings;
 using Authentication.Application.Features.Application.Register;
+using Authentication.Application.Features.Application.RegisterApplicationUser;
 using Authentication.Application.Features.Application.RegisterApplicationRole;
 using Authentication.Application.Features.Applications.AssignApplicationRole;
 using Authentication.Application.Features.Applications.UpdateApplicationSettings;
@@ -25,6 +26,25 @@ public sealed class ApplicationsController : ControllerBase
     [HttpPost("register")]
     public async Task<IActionResult> Register(
         [FromBody] RegisterApplicationCommand command,
+        CancellationToken cancellationToken)
+    {
+        var result = await _sender.Send(
+            command,
+            cancellationToken);
+
+        return this.ToActionResult(result);
+    }
+
+    [AllowAnonymous]
+    [HttpPost("users/register")]
+    [ProducesResponseType(
+        typeof(RegisterApplicationUserResponse),
+        StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    public async Task<IActionResult> RegisterUser(
+        [FromBody] RegisterApplicationUserCommand command,
         CancellationToken cancellationToken)
     {
         var result = await _sender.Send(

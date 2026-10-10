@@ -17,4 +17,8 @@ public interface IApplicationUserAccessRepository
         Guid applicationId,
         Guid userId,
         CancellationToken cancellationToken = default);
+
+    Task<IReadOnlyList<string>> GetActiveApplicationNamesByUserIdAsync(
+        Guid userId,
+        CancellationToken cancellationToken = default);
 }

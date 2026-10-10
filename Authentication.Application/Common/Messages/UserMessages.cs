@@ -41,6 +41,20 @@ public static class UserMessages
             "The email or password is invalid.",
             ErrorType.Validation);
 
+    public static ResultError ExistingAccountCredentialsRequired(
+        IReadOnlyList<string> existingApplicationNames,
+        string requestedApplicationName)
+    {
+        var message = existingApplicationNames.Count > 0
+            ? $"An account with this email already exists in {string.Join(", ", existingApplicationNames)}. Use the password you use to sign in to that application to add access to {requestedApplicationName}."
+            : $"An account with this email already exists. Use your existing account password to add access to {requestedApplicationName}.";
+
+        return new ResultError(
+            "User.ExistingAccountCredentialsRequired",
+            message,
+            ErrorType.Validation);
+    }
+
     public static readonly ResultError InvalidApplicationAccess =
         new(
             "User.InvalidApplicationAccess",

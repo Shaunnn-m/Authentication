@@ -5,7 +5,6 @@ using MediatR;
 namespace Authentication.Application.Features.Authentication.Register;
 
 public sealed record RegisterCommand(
-    Guid ApplicationId,
     string FirstName,
     string LastName,
     string Email,

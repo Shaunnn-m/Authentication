@@ -75,9 +75,9 @@ public sealed class ResendEmailConfirmationCommandHandler
             var confirmationResult =
                 await _emailService.HandleAsync(
                     user.UserId,
-                    request.ApplicationId,
                     user.FirstName,
                     user.Email,
+                    request.ApplicationId,
                     cancellationToken);
 
             if (confirmationResult.IsFailure)
