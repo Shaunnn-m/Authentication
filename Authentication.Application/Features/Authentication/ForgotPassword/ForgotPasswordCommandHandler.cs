@@ -24,7 +24,7 @@ public sealed class ForgotPasswordCommandHandler
         var result =
             await _passwordService.RequestAsync(
                 request.Email,
-                cancellationToken);
+                cancellationToken: cancellationToken);
 
         if (result.IsFailure)
         {

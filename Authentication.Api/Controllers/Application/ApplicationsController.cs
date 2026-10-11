@@ -4,6 +4,10 @@ using Authentication.Application.Features.Application.QueryApplicationsSettings;
 using Authentication.Application.Features.Application.Register;
 using Authentication.Application.Features.Application.RegisterApplicationUser;
 using Authentication.Application.Features.Application.RegisterApplicationRole;
+using Authentication.Application.Features.Application.QueryApplicationRoles;
+using Authentication.Application.Features.Application.UpdateApplicationRole;
+using Authentication.Application.Features.Application.DeleteApplicationRole;
+using Authentication.Application.Features.Application.ForgotPassword;
 using Authentication.Application.Features.Applications.AssignApplicationRole;
 using Authentication.Application.Features.Applications.UpdateApplicationSettings;
 using Authentication.Application.Features.Application.LoginApplicationUser;
@@ -11,6 +15,7 @@ using Authentication.Application.Features.Authentication.Login;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Authentication.Application.Features.Application;
 
 namespace Authentication.Api.Controllers;
 
@@ -74,8 +79,12 @@ public sealed class ApplicationsController : ControllerBase
         return this.ToActionResult(result);
     }
 
+    /// <summary>Creates a role for an application.</summary>
     [Authorize(Policy = "ApplicationAdmin")]
     [HttpPost("{applicationId:guid}/roles")]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
     [ProducesResponseType(
         typeof(RegisterApplicationRoleResponse),
         StatusCodes.Status201Created)]
@@ -95,6 +104,97 @@ public sealed class ApplicationsController : ControllerBase
             cancellationToken);
 
         return this.ToActionResult(result);
+    }
+
+        /// <summary>Requests a password reset using an application's email settings.</summary>
+    [AllowAnonymous]
+    [HttpPost("forgot-password")]
+    [ProducesResponseType(
+        typeof(ApplicationForgotPasswordResponse),
+        StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> ForgotPassword(
+        [FromBody] ApplicationForgotPasswordCommand command,
+        CancellationToken cancellationToken)
+    {
+        var result = await _sender.Send(
+            command,
+            cancellationToken);
+
+        return this.ToActionResult(result);
+    }
+
+    /// <summary>Retrieves the roles defined for an application.</summary>
+    [Authorize(Policy = "ApplicationAdmin")]
+    [HttpGet("{applicationId:guid}/roles")]
+    [ProducesResponseType(
+        typeof(GetApplicationRolesResponse),
+        StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> GetRoles(
+        Guid applicationId,
+        CancellationToken cancellationToken)
+    {
+        var result = await _sender.Send(
+            new GetApplicationRolesQuery(applicationId),
+            cancellationToken);
+
+        return this.ToActionResult(result);
+    }
+
+    /// <summary>Renames an application role.</summary>
+    [Authorize(Policy = "ApplicationAdmin")]
+    [HttpPut("{applicationId:guid}/roles/{roleId:guid}")]
+    [ProducesResponseType(
+        typeof(ApplicationRoleResponse),
+        StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    public async Task<IActionResult> UpdateRole(
+        Guid applicationId,
+        Guid roleId,
+        [FromBody] UpdateApplicationRoleCommand command,
+        CancellationToken cancellationToken)
+    {
+        if (applicationId != command.ApplicationId ||
+            roleId != command.RoleId)
+        {
+            return BadRequest(
+                "Application ID and role ID in the route must match the request.");
+        }
+
+        var result = await _sender.Send(
+            command,
+            cancellationToken);
+
+        return this.ToActionResult(result);
+    }
+
+    /// <summary>Deactivates an application role.</summary>
+    [Authorize(Policy = "ApplicationAdmin")]
+    [HttpDelete("{applicationId:guid}/roles/{roleId:guid}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> DeleteRole(
+        Guid applicationId,
+        Guid roleId,
+        CancellationToken cancellationToken)
+    {
+        var result = await _sender.Send(
+            new DeleteApplicationRoleCommand(
+                applicationId,
+                roleId),
+            cancellationToken);
+
+        if (result.IsFailure)
+        {
+            return this.ToActionResult(result);
+        }
+
+        return NoContent();
     }
 
     [Authorize(Policy = "ApplicationAdmin")]

@@ -91,6 +91,28 @@ namespace Authentication.Infrastructure.Migrations
                     b.ToTable("ApplicationRoles", (string)null);
                 });
 
+            modelBuilder.Entity("Authentication.Domain.Applications.ApplicationSettings", b =>
+                {
+                    b.Property<Guid>("ApplicationId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("EmailHandlingMode")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsEmailVerificationEnabled")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("ApplicationId");
+
+                    b.ToTable("ApplicationSettings", (string)null);
+                });
+
             modelBuilder.Entity("Authentication.Domain.Applications.ApplicationUserAccess", b =>
                 {
                     b.Property<Guid>("ApplicationId")
@@ -144,7 +166,7 @@ namespace Authentication.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid>("ApplicationId")
+                    b.Property<Guid?>("ApplicationId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime>("CreatedAt")
@@ -391,6 +413,15 @@ namespace Authentication.Infrastructure.Migrations
                         .WithMany()
                         .HasForeignKey("ApplicationId")
                         .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Authentication.Domain.Applications.ApplicationSettings", b =>
+                {
+                    b.HasOne("Authentication.Domain.Applications.Application", null)
+                        .WithOne()
+                        .HasForeignKey("Authentication.Domain.Applications.ApplicationSettings", "ApplicationId")
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 

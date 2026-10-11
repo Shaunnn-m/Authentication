@@ -81,10 +81,6 @@ public static class DependencyInjection
         services.Configure<JwtOptions>(
             configuration.GetSection(JwtOptions.SectionName));
 
-        services.Configure<AuthenticationEmailOptions>(
-            configuration.GetSection(
-                AuthenticationEmailOptions.SectionName));
-
         services.Configure<InitialAdminOptions>(
             configuration.GetSection(
                 InitialAdminOptions.SectionName));

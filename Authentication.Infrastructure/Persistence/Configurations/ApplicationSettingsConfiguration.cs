@@ -14,17 +14,16 @@ public sealed class ApplicationSettingsConfiguration
 
         builder.HasKey(x => x.ApplicationId);
 
-        builder.Property(x => x.EmailVerificationEnabled)
+        builder.Property(x => x.EmailHandlingMode)
             .IsRequired();
 
-        builder.Property(x => x.PasswordResetEnabled)
-            .IsRequired();
-
-        builder.Property(x => x.AllowRegistration)
+        builder.Property(x => x.IsEmailVerificationEnabled)
             .IsRequired();
 
         builder.Property(x => x.CreatedAt)
             .IsRequired();
+
+        builder.Property(x => x.UpdatedAt);
 
         builder.HasOne<ApplicationEntity>()
             .WithOne()

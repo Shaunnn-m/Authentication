@@ -1,14 +1,14 @@
 using Authentication.Application.Abstractions.Email;
 using Authentication.Application.Abstractions.Results;
-using Authentication.Application.Common.Authentication;
 using Authentication.Application.Common.Messages;
 using Authentication.Application.Common.Results;
+using Authentication.Application.Interfaces.Application;
 using Authentication.Application.Interfaces.Authentication;
 using Authentication.Application.Interfaces.Email;
 using Authentication.Application.Interfaces.Identity;
 using Authentication.Infrastructure.Identity;
+using Authentication.Domain.Enums;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.Extensions.Options;
 
 namespace Authentication.Infrastructure.Services.Identity;
 
@@ -18,8 +18,8 @@ public sealed class PasswordService : IPasswordService
     private readonly IAuthenticationLinkService _linkService;
     private readonly IEmailService _emailService;
     private readonly IEmailTemplateService _emailTemplateService;
-    private readonly AuthenticationEmailOptions _emailOptions;
     private readonly IRefreshTokenService _refreshTokenService;
+    private readonly IApplicationSettingsRepository _applicationSettingsRepository;
     private readonly UserManager<ApplicationUser> _userManager;
 
     public PasswordService(
@@ -27,16 +27,16 @@ public sealed class PasswordService : IPasswordService
         IAuthenticationLinkService linkService,
         IEmailService emailService,
         IEmailTemplateService emailTemplateService,
-        IOptions<AuthenticationEmailOptions> emailOptions,
         IRefreshTokenService refreshTokenService,
+        IApplicationSettingsRepository applicationSettingsRepository,
         UserManager<ApplicationUser> userManager)
     {
         _userService = userService;
         _linkService = linkService;
         _emailService = emailService;
         _emailTemplateService = emailTemplateService;
-        _emailOptions = emailOptions.Value;
         _refreshTokenService = refreshTokenService;
+        _applicationSettingsRepository = applicationSettingsRepository;
         _userManager = userManager;
     }
 
@@ -66,11 +66,25 @@ public sealed class PasswordService : IPasswordService
 
     public async Task<Result<PasswordResetResult?>> RequestAsync(
         string email,
+        Guid? applicationId = null,
         CancellationToken cancellationToken = default)
     {
-        if (!_emailOptions.Enabled)
+        var emailHandlingMode = EmailHandlingMode.PlatformManaged;
+
+        if (applicationId.HasValue)
         {
-            return Result<PasswordResetResult?>.Success(null);
+            var settings =
+                await _applicationSettingsRepository.GetByApplicationIdAsync(
+                    applicationId.Value,
+                    cancellationToken);
+
+            if (settings is null)
+            {
+                return Result<PasswordResetResult?>.Failure(
+                    ApplicationMessages.SettingsNotFound);
+            }
+
+            emailHandlingMode = settings.EmailHandlingMode;
         }
 
         var userResult = await _userService.GetByEmailAsync(
@@ -109,7 +123,7 @@ public sealed class PasswordService : IPasswordService
             userResult.Value.FirstName,
             resetLink);
 
-        if (_emailOptions.Mode == AuthenticationEmailMode.AuthenticationService)
+        if (emailHandlingMode == EmailHandlingMode.PlatformManaged)
         {
             var body = _emailTemplateService.RenderPasswordReset(
                 result.FirstName,

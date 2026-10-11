@@ -8,11 +8,8 @@ public sealed class ApplicationSettings
 
     public Guid ApplicationId { get; private set; }
 
-    // Email settings
     public EmailHandlingMode EmailHandlingMode { get; private set; }
-    public bool IsEmailVerificationEnabled = true;
-
-    // Future settings can be added here as the platform grows.
+    public bool IsEmailVerificationEnabled { get; private set; }
 
     public DateTime CreatedAt { get; private set; }
     public DateTime? UpdatedAt { get; private set; }
