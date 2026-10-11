@@ -14,22 +14,33 @@ namespace Authentication.Application.Features.Application.RegisterApplicationRol
     {
         private readonly IApplicationRepository _applicationRepository;
         private readonly IApplicationRoleRepository _roleRepository;
+        private readonly ICurrentApplicationService _currentApplicationService;
 
         public RegisterApplicationRoleCommandHandler(
             IApplicationRepository applicationRepository,
-            IApplicationRoleRepository roleRepository
+            IApplicationRoleRepository roleRepository,
+            ICurrentApplicationService currentApplicationService
             )
         {
             _applicationRepository = applicationRepository;
             _roleRepository = roleRepository;
+            _currentApplicationService = currentApplicationService;
         }
 
         public async Task<Result<RegisterApplicationRoleResponse>> Handle(
             RegisterApplicationRoleCommand request,
             CancellationToken cancellationToken)
         {
+            var applicationId = _currentApplicationService.ApplicationId;
+
+            if (!applicationId.HasValue || applicationId.Value == Guid.Empty)
+            {
+                return Result<RegisterApplicationRoleResponse>.Failure(
+                    ApplicationMessages.ContextRequired);
+            }
+
             var application = await _applicationRepository.GetByAppplicationId(
-                request.ApplicationId,
+                applicationId.Value,
                 cancellationToken);
 
             if (application is null)
@@ -46,7 +57,7 @@ namespace Authentication.Application.Features.Application.RegisterApplicationRol
 
             var roleName = request.Name.Trim();
             var roleExists = await _roleRepository.ExistsAsync(
-                request.ApplicationId,
+                application.Id,
                 roleName,
                 cancellationToken);
 
@@ -57,7 +68,7 @@ namespace Authentication.Application.Features.Application.RegisterApplicationRol
             }
 
             var role = ApplicationRole.Create(
-                request.ApplicationId,
+                application.Id,
                 roleName);
 
             await _roleRepository.AddAsync(

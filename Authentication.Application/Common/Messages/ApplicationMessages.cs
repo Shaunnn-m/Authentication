@@ -25,6 +25,12 @@ public static class ApplicationMessages
             "The application is inactive.",
             ErrorType.Forbidden);
 
+    public static readonly ResultError ContextRequired =
+        new(
+            "Application.ContextRequired",
+            "An application context is required.",
+            ErrorType.Unauthorized);
+
     public static readonly ResultError RegistrationDisabled =
         new(
         "Application.RegistrationDisabled",

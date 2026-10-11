@@ -11,19 +11,30 @@ namespace Authentication.Application.Features.Application.QueryApplicationsSetti
          Result<GetApplicationSettingsResponse>>
     {
         private readonly IApplicationSettingsRepository _repository;
+        private readonly ICurrentApplicationService _currentApplicationService;
 
         public GetApplicationSettingsQueryHandler(
-            IApplicationSettingsRepository repository)
+            IApplicationSettingsRepository repository,
+            ICurrentApplicationService currentApplicationService)
         {
             _repository = repository;
+            _currentApplicationService = currentApplicationService;
         }
 
         public async Task<Result<GetApplicationSettingsResponse>> Handle(
             GetApplicationSettingsQuery request,
             CancellationToken cancellationToken)
         {
+            var applicationId = _currentApplicationService.ApplicationId;
+
+            if (!applicationId.HasValue || applicationId.Value == Guid.Empty)
+            {
+                return Result<GetApplicationSettingsResponse>.Failure(
+                    ApplicationMessages.ContextRequired);
+            }
+
             var settings = await _repository.GetByApplicationIdAsync(
-                request.ApplicationId,
+                applicationId.Value,
                 cancellationToken);
 
             if (settings is null)

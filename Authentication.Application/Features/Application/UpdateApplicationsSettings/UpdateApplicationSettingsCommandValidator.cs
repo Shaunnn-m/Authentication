@@ -8,8 +8,7 @@ public sealed class UpdateApplicationSettingsCommandValidator
 {
     public UpdateApplicationSettingsCommandValidator()
     {
-        RuleFor(x => x.ApplicationId)
-            .NotEmpty();
-
+        RuleFor(x => x.settings.EmailHandlingMode)
+            .IsInEnum();
     }
 }

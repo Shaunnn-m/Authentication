@@ -7,9 +7,6 @@ public sealed class UpdateApplicationRoleCommandValidator
 {
     public UpdateApplicationRoleCommandValidator()
     {
-        RuleFor(x => x.ApplicationId)
-            .NotEmpty();
-
         RuleFor(x => x.RoleId)
             .NotEmpty();
 

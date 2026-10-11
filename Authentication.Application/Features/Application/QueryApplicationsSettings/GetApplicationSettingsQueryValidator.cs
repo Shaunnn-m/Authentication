@@ -7,7 +7,5 @@ public sealed class GetApplicationSettingsQueryValidator
 {
     public GetApplicationSettingsQueryValidator()
     {
-        RuleFor(x => x.ApplicationId)
-            .NotEmpty();
     }
 }

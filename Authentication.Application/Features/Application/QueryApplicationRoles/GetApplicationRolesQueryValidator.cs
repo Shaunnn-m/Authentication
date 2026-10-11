@@ -7,7 +7,5 @@ public sealed class GetApplicationRolesQueryValidator
 {
     public GetApplicationRolesQueryValidator()
     {
-        RuleFor(x => x.ApplicationId)
-            .NotEmpty();
     }
 }

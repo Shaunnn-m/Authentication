@@ -19,27 +19,38 @@ public sealed class AssignApplicationRoleCommandHandler
     private readonly IApplicationUserAccessRepository _accessRepository;
     private readonly IApplicationUserRoleRepository _userRoleRepository;
     private readonly IUserService _userService;
+    private readonly ICurrentApplicationService _currentApplicationService;
 
     public AssignApplicationRoleCommandHandler(
         IApplicationRepository applicationRepository,
         IApplicationRoleRepository roleRepository,
         IApplicationUserAccessRepository accessRepository,
         IApplicationUserRoleRepository userRoleRepository,
-        IUserService userService)
+        IUserService userService,
+        ICurrentApplicationService currentApplicationService)
     {
         _applicationRepository = applicationRepository;
         _roleRepository = roleRepository;
         _accessRepository = accessRepository;
         _userRoleRepository = userRoleRepository;
         _userService = userService;
+        _currentApplicationService = currentApplicationService;
     }
 
     public async Task<Result<AssignApplicationRoleResponse>> Handle(
         AssignApplicationRoleCommand request,
         CancellationToken cancellationToken)
     {
+        var applicationId = _currentApplicationService.ApplicationId;
+
+        if (!applicationId.HasValue || applicationId.Value == Guid.Empty)
+        {
+            return Result<AssignApplicationRoleResponse>.Failure(
+                ApplicationMessages.ContextRequired);
+        }
+
         var application = await _applicationRepository.GetByAppplicationId(
-            request.ApplicationId,
+            applicationId.Value,
             cancellationToken);
 
         if (application is null)
@@ -59,7 +70,7 @@ public sealed class AssignApplicationRoleCommandHandler
             cancellationToken);
 
         if (role is null ||
-            role.ApplicationId != request.ApplicationId)
+            role.ApplicationId != application.Id)
         {
             return Result<AssignApplicationRoleResponse>.Failure(
                 ApplicationMessages.RoleNotFound);
@@ -71,19 +82,19 @@ public sealed class AssignApplicationRoleCommandHandler
                 ApplicationMessages.RoleInactive);
         }
 
-        var user = await _userService.GetByIdAsync(
+        var userResult = await _userService.GetByIdAsync(
             request.UserId,
             cancellationToken);
 
-        if (user is null)
+        if (userResult.IsFailure)
         {
             return Result<AssignApplicationRoleResponse>.Failure(
-                UserMessages.NotFound);
+                userResult.Error!);
         }
 
         var hasApplicationAccess =
             await _accessRepository.ExistsAsync(
-                request.ApplicationId,
+                application.Id,
                 request.UserId,
                 cancellationToken);
 
@@ -95,7 +106,7 @@ public sealed class AssignApplicationRoleCommandHandler
 
         var alreadyAssigned =
             await _userRoleRepository.ExistsAsync(
-                request.ApplicationId,
+                application.Id,
                 request.UserId,
                 request.RoleId,
                 cancellationToken);
@@ -107,7 +118,7 @@ public sealed class AssignApplicationRoleCommandHandler
         }
 
         var userRole = ApplicationUserRole.Create(
-            request.ApplicationId,
+            application.Id,
             request.UserId,
             request.RoleId);
 

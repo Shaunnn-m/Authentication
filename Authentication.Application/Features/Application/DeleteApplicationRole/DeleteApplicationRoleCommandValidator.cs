@@ -7,9 +7,6 @@ public sealed class DeleteApplicationRoleCommandValidator
 {
     public DeleteApplicationRoleCommandValidator()
     {
-        RuleFor(x => x.ApplicationId)
-            .NotEmpty();
-
         RuleFor(x => x.RoleId)
             .NotEmpty();
     }

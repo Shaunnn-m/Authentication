@@ -1,4 +1,5 @@
 ﻿using Authentication.Application.Common.Authorization;
+using Authentication.Application.Interfaces.Application;
 using Authentication.Application.Interfaces.Applications;
 using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
@@ -12,17 +13,20 @@ namespace Authentication.Api.Common.Authorization
         private readonly IApplicationUserAccessRepository _accessRepository;
         private readonly IApplicationUserRoleRepository _userRoleRepository;
         private readonly IApplicationRepository _applicationRepository;
+        private readonly ICurrentApplicationService _currentApplicationService;
 
         public ApplicationAdminHandler(
             IHttpContextAccessor httpContextAccessor,
             IApplicationUserAccessRepository accessRepository,
             IApplicationUserRoleRepository userRoleRepository,
-            IApplicationRepository applicationRepository)
+            IApplicationRepository applicationRepository,
+            ICurrentApplicationService currentApplicationService)
         {
             _httpContextAccessor = httpContextAccessor;
             _accessRepository = accessRepository;
             _userRoleRepository = userRoleRepository;
             _applicationRepository = applicationRepository;
+            _currentApplicationService = currentApplicationService;
         }
 
         protected override async Task HandleRequirementAsync(
@@ -43,6 +47,9 @@ namespace Authentication.Api.Common.Authorization
             if (!Guid.TryParse(
                     httpContext.Request.RouteValues["applicationId"]?.ToString(),
                     out var applicationId))
+                return;
+
+            if (_currentApplicationService.ApplicationId != applicationId)
                 return;
 
             var application = await _applicationRepository.GetByAppplicationId(

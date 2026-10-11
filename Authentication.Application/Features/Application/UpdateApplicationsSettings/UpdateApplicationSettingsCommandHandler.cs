@@ -12,19 +12,30 @@ namespace Authentication.Application.Features.Application.UpdateApplicationsSett
         Result<UpdateApplicationSettingsResponse>>
     {
         private readonly IApplicationSettingsRepository _repository;
+        private readonly ICurrentApplicationService _currentApplicationService;
 
         public UpdateApplicationSettingsCommandHandler(
-            IApplicationSettingsRepository repository)
+            IApplicationSettingsRepository repository,
+            ICurrentApplicationService currentApplicationService)
         {
             _repository = repository;
+            _currentApplicationService = currentApplicationService;
         }
 
         public async Task<Result<UpdateApplicationSettingsResponse>> Handle(
             UpdateApplicationSettingsCommand request,
             CancellationToken cancellationToken)
         {
+            var applicationId = _currentApplicationService.ApplicationId;
+
+            if (!applicationId.HasValue || applicationId.Value == Guid.Empty)
+            {
+                return Result<UpdateApplicationSettingsResponse>.Failure(
+                    ApplicationMessages.ContextRequired);
+            }
+
             var settings = await _repository.GetByApplicationIdAsync(
-                request.ApplicationId,
+                applicationId.Value,
                 cancellationToken);
 
             if (settings is null)

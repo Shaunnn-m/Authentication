@@ -11,21 +11,32 @@ public sealed class GetApplicationRolesQueryHandler
 {
     private readonly IApplicationRepository _applicationRepository;
     private readonly IApplicationRoleRepository _roleRepository;
+    private readonly ICurrentApplicationService _currentApplicationService;
 
     public GetApplicationRolesQueryHandler(
         IApplicationRepository applicationRepository,
-        IApplicationRoleRepository roleRepository)
+        IApplicationRoleRepository roleRepository,
+        ICurrentApplicationService currentApplicationService)
     {
         _applicationRepository = applicationRepository;
         _roleRepository = roleRepository;
+        _currentApplicationService = currentApplicationService;
     }
 
     public async Task<Result<GetApplicationRolesResponse>> Handle(
         GetApplicationRolesQuery request,
         CancellationToken cancellationToken)
     {
+        var applicationId = _currentApplicationService.ApplicationId;
+
+        if (!applicationId.HasValue || applicationId.Value == Guid.Empty)
+        {
+            return Result<GetApplicationRolesResponse>.Failure(
+                ApplicationMessages.ContextRequired);
+        }
+
         var application = await _applicationRepository.GetByAppplicationId(
-            request.ApplicationId,
+            applicationId.Value,
             cancellationToken);
 
         if (application is null)

@@ -8,9 +8,6 @@ public sealed class AssignApplicationRoleCommandValidator
 {
     public AssignApplicationRoleCommandValidator()
     {
-        RuleFor(x => x.ApplicationId)
-            .NotEmpty();
-
         RuleFor(x => x.UserId)
             .NotEmpty();
 

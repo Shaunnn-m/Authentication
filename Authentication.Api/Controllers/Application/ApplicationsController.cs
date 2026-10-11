@@ -31,7 +31,7 @@ public sealed class ApplicationsController : ControllerBase
     }
 
     [AllowAnonymous]
-    [HttpPost("login")]
+    [HttpPost("users/login")]
     [ProducesResponseType(typeof(LoginResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -93,12 +93,6 @@ public sealed class ApplicationsController : ControllerBase
         RegisterApplicationRoleCommand command,
         CancellationToken cancellationToken)
     {
-        if (applicationId != command.ApplicationId)
-        {
-            return BadRequest(
-                "Application ID in the route does not match the request.");
-        }
-
         var result = await _sender.Send(
             command,
             cancellationToken);
@@ -108,7 +102,7 @@ public sealed class ApplicationsController : ControllerBase
 
         /// <summary>Requests a password reset using an application's email settings.</summary>
     [AllowAnonymous]
-    [HttpPost("forgot-password")]
+    [HttpPost("users/forgot-password")]
     [ProducesResponseType(
         typeof(ApplicationForgotPasswordResponse),
         StatusCodes.Status200OK)]
@@ -138,7 +132,7 @@ public sealed class ApplicationsController : ControllerBase
         CancellationToken cancellationToken)
     {
         var result = await _sender.Send(
-            new GetApplicationRolesQuery(applicationId),
+            new GetApplicationRolesQuery(),
             cancellationToken);
 
         return this.ToActionResult(result);
@@ -159,11 +153,10 @@ public sealed class ApplicationsController : ControllerBase
         [FromBody] UpdateApplicationRoleCommand command,
         CancellationToken cancellationToken)
     {
-        if (applicationId != command.ApplicationId ||
-            roleId != command.RoleId)
+        if (roleId != command.RoleId)
         {
             return BadRequest(
-                "Application ID and role ID in the route must match the request.");
+                "Role ID in the route must match the request.");
         }
 
         var result = await _sender.Send(
@@ -185,7 +178,6 @@ public sealed class ApplicationsController : ControllerBase
     {
         var result = await _sender.Send(
             new DeleteApplicationRoleCommand(
-                applicationId,
                 roleId),
             cancellationToken);
 
@@ -209,7 +201,6 @@ public sealed class ApplicationsController : ControllerBase
         CancellationToken cancellationToken)
     {
         var command = new AssignApplicationRoleCommand(
-            applicationId,
             userId,
             roleId);
 
@@ -234,7 +225,7 @@ public sealed class ApplicationsController : ControllerBase
         CancellationToken cancellationToken)
     {
         var result = await _sender.Send(
-            new GetApplicationSettingsQuery(applicationId),
+            new GetApplicationSettingsQuery(),
             cancellationToken);
 
         return this.ToActionResult(result);
@@ -255,12 +246,6 @@ public sealed class ApplicationsController : ControllerBase
         [FromBody] UpdateApplicationSettingsCommand command,
         CancellationToken cancellationToken)
     {
-        if (applicationId != command.ApplicationId)
-        {
-            return BadRequest(
-                "Application ID in the route does not match the request.");
-        }
-
         var result = await _sender.Send(
             command,
             cancellationToken);

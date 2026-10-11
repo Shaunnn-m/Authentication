@@ -7,7 +7,6 @@ using MediatR;
 namespace Authentication.Application.Features.Applications.UpdateApplicationSettings;
 
 public sealed record UpdateApplicationSettingsCommand(
-    Guid ApplicationId,
     UpdateApplicationSettingsRequest settings)
     : IRequest<Result<UpdateApplicationSettingsResponse>>, IUnitOfWorkCommand;
 

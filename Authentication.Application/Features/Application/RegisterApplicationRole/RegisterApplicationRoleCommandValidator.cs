@@ -7,10 +7,6 @@ namespace Authentication.Application.Features.Application.RegisterApplicationRol
     {
         public RegisterApplicationRoleCommandValidator()
         {
-            RuleFor(x => x.ApplicationId)
-                .NotEmpty()
-                .WithMessage("Application ID is required.");
-
             RuleFor(x => x.Name)
                 .NotEmpty()
                 .WithMessage("Role name is required.")

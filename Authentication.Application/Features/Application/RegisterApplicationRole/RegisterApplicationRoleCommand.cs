@@ -5,7 +5,6 @@ using MediatR;
 namespace Authentication.Application.Features.Application.RegisterApplicationRole
 {
     public sealed record RegisterApplicationRoleCommand(
-    Guid ApplicationId,
     string Name)
     : IRequest<Result<RegisterApplicationRoleResponse>>, IUnitOfWorkCommand;
 }
