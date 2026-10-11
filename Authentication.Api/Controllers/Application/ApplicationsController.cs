@@ -6,6 +6,8 @@ using Authentication.Application.Features.Application.RegisterApplicationUser;
 using Authentication.Application.Features.Application.RegisterApplicationRole;
 using Authentication.Application.Features.Applications.AssignApplicationRole;
 using Authentication.Application.Features.Applications.UpdateApplicationSettings;
+using Authentication.Application.Features.Application.LoginApplicationUser;
+using Authentication.Application.Features.Authentication.Login;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -22,6 +24,24 @@ public sealed class ApplicationsController : ControllerBase
     {
         _sender = sender;
     }
+
+    [AllowAnonymous]
+    [HttpPost("login")]
+    [ProducesResponseType(typeof(LoginResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> LoginUser(
+        [FromBody] LoginApplicationUserCommand command,
+        CancellationToken cancellationToken)
+    {
+        var result = await _sender.Send(
+            command,
+            cancellationToken);
+
+        return this.ToActionResult(result);
+    }
+
     [Authorize]
     [HttpPost("register")]
     public async Task<IActionResult> Register(

@@ -6,8 +6,8 @@ namespace Authentication.Application.Interfaces.Authentication;
 public interface IRefreshTokenService
 {
     Task<Result<string>> CreateAsync(
-        Guid userId, 
-        Guid applicationId,
+        Guid userId,
+        Guid? applicationId = null,
         CancellationToken cancellationToken = default);
 
     Task<Result<RefreshTokenValidationResult>> ValidateAsync(

@@ -22,7 +22,7 @@ public class RefreshTokenConfiguration
             .IsRequired();
 
         builder.Property(x => x.ApplicationId)
-            .IsRequired();
+            .IsRequired(false);
 
         builder.Property(x => x.ExpiresAt)
             .IsRequired();

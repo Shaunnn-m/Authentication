@@ -26,7 +26,7 @@ public class RefreshTokenService : IRefreshTokenService
 
     public async Task<Result<string>> CreateAsync(
         Guid userId,
-        Guid applicationId,
+        Guid? applicationId = null,
         CancellationToken cancellationToken = default)
     {
         var tokenBytes = RandomNumberGenerator.GetBytes(64);

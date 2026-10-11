@@ -12,7 +12,7 @@ public class RefreshToken : BaseEntity
 
     public DateTime? RevokedAt { get; private set; }
 
-    public Guid ApplicationId { get; private set; }
+    public Guid? ApplicationId { get; private set; }
 
     public bool IsRevoked => RevokedAt.HasValue;
 
@@ -27,7 +27,7 @@ public class RefreshToken : BaseEntity
 
     private RefreshToken(
         Guid userId,
-        Guid applicationId,
+        Guid? applicationId,
         string tokenHash,
         DateTime expiresAt)
     {
@@ -39,7 +39,7 @@ public class RefreshToken : BaseEntity
 
     public static RefreshToken Create(
         Guid userId,
-        Guid applicationId,
+        Guid? applicationId,
         string tokenHash,
         DateTime expiresAt)
     {
@@ -48,9 +48,9 @@ public class RefreshToken : BaseEntity
                 "User ID is required.",
                 nameof(userId));
 
-        if (applicationId == Guid.Empty) 
+        if (applicationId == Guid.Empty)
             throw new ArgumentException(
-                "ApplicationID is required",
+                "Application ID cannot be empty.",
                 nameof(applicationId));
 
         if (string.IsNullOrWhiteSpace(tokenHash))

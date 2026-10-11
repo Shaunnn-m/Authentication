@@ -41,6 +41,7 @@ public sealed class AuthenticationController : ControllerBase
     }
 
     [HttpPost("login")]
+    [AllowAnonymous]
     public async Task<IActionResult> Login(
         [FromBody] LoginCommand command,
         CancellationToken cancellationToken)
