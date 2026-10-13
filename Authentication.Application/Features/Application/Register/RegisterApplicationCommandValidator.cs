@@ -12,5 +12,8 @@ public sealed class RegisterApplicationCommandValidator
             .NotEmpty()
             .MaximumLength(100);
 
+        RuleFor(x => x.ClientType)
+            .IsInEnum();
+
     }
 }

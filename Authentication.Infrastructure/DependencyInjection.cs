@@ -79,6 +79,8 @@ public static class DependencyInjection
         services.AddScoped<IApplicationRoleRepository, ApplicationRoleRepository>();
         services.AddScoped<IApplicationSettingsRepository, ApplicationSettingsRepository>();
         services.AddScoped<ICurrentApplicationService, CurrentApplicationService>();
+        services.AddScoped<IApplicationClientCredentialRepository, ApplicationClientCredentialRepository>();
+        services.AddSingleton<IClientSecretGenerator, ClientSecretGenerator>();
 
         services.Configure<JwtOptions>(
             configuration.GetSection(JwtOptions.SectionName));

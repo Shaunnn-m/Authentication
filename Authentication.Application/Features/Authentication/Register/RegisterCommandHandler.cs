@@ -4,6 +4,7 @@ using Authentication.Application.Common.Results;
 using MediatR;
 using Authentication.Application.Common.Messages;
 using Authentication.Application.Interfaces.Email;
+using Authentication.Application.Interfaces.Common;
 
 namespace Authentication.Application.Features.Authentication.Register;
 
@@ -13,15 +14,18 @@ public sealed class RegisterCommandHandler
     private readonly IUserService _userService;
     private readonly IEmailService _emailService;
     private readonly IAdminUserService _adminUserService;
+    private readonly IUnitOfWork _unitOfWork;
 
     public RegisterCommandHandler(
         IUserService userService,
         IEmailService emailService,
-        IAdminUserService adminUserService)
+        IAdminUserService adminUserService,
+        IUnitOfWork unitOfWork)
     {
         _userService = userService;
         _emailService = emailService;
         _adminUserService = adminUserService;
+        _unitOfWork = unitOfWork;
     }
 
     public async Task<Result<RegisterResponse>> Handle(
@@ -50,6 +54,8 @@ public sealed class RegisterCommandHandler
             return Result<RegisterResponse>.Failure(
                 result.Error!);
         }
+
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         var roleResult = await _adminUserService.AddToRoleAsync(
             result.Value,

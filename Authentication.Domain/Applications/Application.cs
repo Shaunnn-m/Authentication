@@ -1,3 +1,5 @@
+using Authentication.Domain.Enums;
+
 namespace Authentication.Domain.Applications;
 
 public sealed class Application
@@ -12,6 +14,8 @@ public sealed class Application
 
     public string ClientId { get; private set; } = null!;
 
+    public ApplicationClientType ClientType { get; private set; }
+
     public Guid CreatedByUserId { get; private set; }
 
     public bool IsActive { get; private set; }
@@ -23,6 +27,7 @@ public sealed class Application
     public static Application Create(
     string name,
     string clientId,
+    ApplicationClientType clientType,
     Guid createdByUserId)
     {
         return new Application
@@ -30,6 +35,7 @@ public sealed class Application
             Id = Guid.NewGuid(),
             Name = name,
             ClientId = clientId,
+            ClientType = clientType,
             CreatedByUserId = createdByUserId,
             IsActive = true,
             CreatedAt = DateTime.UtcNow

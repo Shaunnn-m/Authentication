@@ -7,6 +7,7 @@ namespace Authentication.Application.Features.Application.Register;
 
 public sealed record RegisterApplicationCommand(
     string Name,
+    ApplicationClientType ClientType,
     RegisterApplicationSettingsRequest? Settings = null)
     : IRequest<Result<RegisterApplicationResponse>>, IUnitOfWorkCommand;
 

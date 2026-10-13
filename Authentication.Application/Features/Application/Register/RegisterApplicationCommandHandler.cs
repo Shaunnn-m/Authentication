@@ -23,6 +23,8 @@ public sealed class RegisterApplicationCommandHandler
     private readonly IApplicationUserRoleRepository _userRoleRepository;
     private readonly IApplicationUserAccessRepository _accessRepository;
     private readonly IApplicationSettingsRepository _applicationSettingsRepository;
+    private readonly IApplicationClientCredentialRepository _clientCredentialRepository;
+    private readonly IClientSecretGenerator _clientSecretGenerator;
 
     public RegisterApplicationCommandHandler(
         IApplicationRepository applicationRepository,
@@ -30,7 +32,9 @@ public sealed class RegisterApplicationCommandHandler
         ICurrentUser currentUserService,
         IApplicationUserRoleRepository userRoleRepository,
         IApplicationUserAccessRepository accessRepository,
-        IApplicationSettingsRepository applicationSettingsRepository)
+        IApplicationSettingsRepository applicationSettingsRepository,
+        IApplicationClientCredentialRepository clientCredentialRepository,
+        IClientSecretGenerator clientSecretGenerator)
     {
         _applicationRepository = applicationRepository;
         _roleRepository = roleRepository;
@@ -38,6 +42,8 @@ public sealed class RegisterApplicationCommandHandler
         _userRoleRepository = userRoleRepository;
         _accessRepository = accessRepository;
         _applicationSettingsRepository = applicationSettingsRepository;
+        _clientCredentialRepository = clientCredentialRepository;
+        _clientSecretGenerator = clientSecretGenerator;
     }
 
     public async Task<Result<RegisterApplicationResponse>> Handle(
@@ -57,6 +63,7 @@ public sealed class RegisterApplicationCommandHandler
         var application = ApplicationEntity.Create(
             request.Name.Trim(),
             clientId,
+            request.ClientType,
             userId.Value);
 
         await _applicationRepository.AddAsync(
@@ -110,10 +117,29 @@ public sealed class RegisterApplicationCommandHandler
             applicationSettings,
             cancellationToken);
 
+        string? clientSecret = null;
+
+        if (request.ClientType == ApplicationClientType.Confidential)
+        {
+            clientSecret = _clientSecretGenerator.Generate();
+
+            var secretHash = _clientSecretGenerator.Hash(clientSecret);
+
+            var credential = ApplicationClientCredential.Create(
+                application.Id,
+                "Initial credential",
+                secretHash);
+
+            await _clientCredentialRepository.AddAsync(
+                credential,
+                cancellationToken);
+        }
+
         return Result<RegisterApplicationResponse>.Success(
             new RegisterApplicationResponse(
                 application.Id,
                 application.Name,
-                application.ClientId));
+                application.ClientId,
+                clientSecret));
     }
 }

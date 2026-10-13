@@ -113,6 +113,8 @@ public sealed class UserService : IUserService
                 });
         }
 
+        user.IsActive = true;
+
         return Result<string>.Success(
             "Email confirmed successfully.");
     }

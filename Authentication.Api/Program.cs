@@ -42,6 +42,9 @@ builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddScoped<
     IAuthorizationHandler,
     ApplicationAccessHandler>();
+builder.Services.AddScoped<
+    IAuthorizationHandler,
+    ApplicationAdminHandler>();
 builder.Services
     .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>

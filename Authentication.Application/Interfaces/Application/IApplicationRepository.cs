@@ -16,4 +16,7 @@ public interface IApplicationRepository
         Guid ApplicationId,
         CancellationToken cancellationToken = default);
 
+    Task DeleteAsync(
+        ApplicationEntity application,
+        CancellationToken cancellationToken = default);
 }

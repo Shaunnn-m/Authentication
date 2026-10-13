@@ -25,6 +25,12 @@ public static class ApplicationMessages
             "The application is inactive.",
             ErrorType.Forbidden);
 
+    public static readonly ResultError CreatorOnly =
+        new(
+            "Application.CreatorOnly",
+            "Only the user who created the application can delete it.",
+            ErrorType.Forbidden);
+
     public static readonly ResultError ContextRequired =
         new(
             "Application.ContextRequired",

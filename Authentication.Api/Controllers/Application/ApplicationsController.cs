@@ -10,6 +10,8 @@ using Authentication.Application.Features.Application.DeleteApplicationRole;
 using Authentication.Application.Features.Application.ForgotPassword;
 using Authentication.Application.Features.Applications.AssignApplicationRole;
 using Authentication.Application.Features.Applications.UpdateApplicationSettings;
+using Authentication.Application.Features.Application.DeactivateApplication;
+using Authentication.Application.Features.Application.DeleteApplication;
 using Authentication.Application.Features.Application.LoginApplicationUser;
 using Authentication.Application.Features.Authentication.Login;
 using MediatR;
@@ -58,6 +60,50 @@ public sealed class ApplicationsController : ControllerBase
             cancellationToken);
 
         return this.ToActionResult(result);
+    }
+
+    /// <summary>Deactivates an application. Requires an application administrator role.</summary>
+    [Authorize(Policy = "ApplicationAdmin")]
+    [HttpPatch("{applicationId:guid}/deactivate")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> Deactivate(
+        Guid applicationId,
+        CancellationToken cancellationToken)
+    {
+        var result = await _sender.Send(
+            new DeactivateApplicationCommand(),
+            cancellationToken);
+
+        if (result.IsFailure)
+        {
+            return this.ToActionResult(result);
+        }
+
+        return NoContent();
+    }
+
+    /// <summary>Deletes an application and its application-scoped access data. Only its creator can do this.</summary>
+    [Authorize]
+    [HttpDelete("{applicationId:guid}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> Delete(
+        Guid applicationId,
+        CancellationToken cancellationToken)
+    {
+        var result = await _sender.Send(
+            new DeleteApplicationCommand(applicationId),
+            cancellationToken);
+
+        if (result.IsFailure)
+        {
+            return this.ToActionResult(result);
+        }
+
+        return NoContent();
     }
 
     [AllowAnonymous]
@@ -140,7 +186,7 @@ public sealed class ApplicationsController : ControllerBase
 
     /// <summary>Renames an application role.</summary>
     [Authorize(Policy = "ApplicationAdmin")]
-    [HttpPut("{applicationId:guid}/roles/{roleId:guid}")]
+    [HttpPut("roles/{roleId:guid}")]
     [ProducesResponseType(
         typeof(ApplicationRoleResponse),
         StatusCodes.Status200OK)]
@@ -168,11 +214,10 @@ public sealed class ApplicationsController : ControllerBase
 
     /// <summary>Deactivates an application role.</summary>
     [Authorize(Policy = "ApplicationAdmin")]
-    [HttpDelete("{applicationId:guid}/roles/{roleId:guid}")]
+    [HttpDelete("roles/{roleId:guid}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> DeleteRole(
-        Guid applicationId,
         Guid roleId,
         CancellationToken cancellationToken)
     {
@@ -190,12 +235,11 @@ public sealed class ApplicationsController : ControllerBase
     }
 
     [Authorize(Policy = "ApplicationAdmin")]
-    [HttpPost("{applicationId:guid}/roles/{roleId:guid}/users/{userId:guid}")]
+    [HttpPost("roles/{roleId:guid}/users/{userId:guid}")]
     [ProducesResponseType(
         typeof(AssignApplicationRoleResponse),
         StatusCodes.Status201Created)]
     public async Task<IActionResult> AssignRole(
-        Guid applicationId,
         Guid roleId,
         Guid userId,
         CancellationToken cancellationToken)

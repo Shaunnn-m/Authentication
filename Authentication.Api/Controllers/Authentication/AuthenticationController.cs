@@ -14,7 +14,6 @@ using Microsoft.AspNetCore.RateLimiting;
 
 namespace Authentication.Api.Controllers.Authentication;
 
-[Authorize(Policy = "ApplicationAccess")]
 [ApiController]
 [Route("api/authentication")]
 [EnableRateLimiting("Authentication")]
@@ -79,6 +78,7 @@ public sealed class AuthenticationController : ControllerBase
     }
 
     [HttpPost("forgot-password")]
+    [AllowAnonymous]
     public async Task<IActionResult> ForgotPassword(
         [FromBody] ForgotPasswordCommand command,
         CancellationToken cancellationToken)
@@ -91,6 +91,7 @@ public sealed class AuthenticationController : ControllerBase
     }
 
     [HttpPost("reset-password")]
+    [AllowAnonymous]
     public async Task<IActionResult> ResetPassword(
         [FromBody] ResetPasswordCommand command,
         CancellationToken cancellationToken)
@@ -103,6 +104,7 @@ public sealed class AuthenticationController : ControllerBase
     }
 
     [HttpGet("confirm-email")]
+    [AllowAnonymous]
     public async Task<IActionResult> ConfirmEmail(
         [FromQuery] Guid userId,
         [FromQuery] string token,
@@ -120,6 +122,7 @@ public sealed class AuthenticationController : ControllerBase
     }
 
     [HttpPost("resend-confirmation")]
+    [AllowAnonymous]
     public async Task<IActionResult> ResendConfirmation(
         [FromBody] ResendEmailConfirmationCommand command,
         CancellationToken cancellationToken)

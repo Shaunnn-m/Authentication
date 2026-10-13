@@ -19,6 +19,9 @@ public class AuthenticationDbContext
     public DbSet<ApplicationSettings> ApplicationSettings
     => Set<ApplicationSettings>();
 
+    public DbSet<ApplicationClientCredential> ApplicationClientCredentials
+    => Set<ApplicationClientCredential>();
+
     public DbSet<ApplicationUserRole> ApplicationUserRoles =>
         Set<ApplicationUserRole>();
 
