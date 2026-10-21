@@ -72,6 +72,9 @@ public static class DependencyInjection
         services.AddScoped<IAdminUserService, AdminUserService>();
         services.AddScoped<IApplicationRepository, ApplicationRepository>();
         services.AddScoped<IUnitOfWork, UnitOfWork>();
+        services.AddScoped<
+            IApplicationSettingsRepository,
+            ApplicationSettingsRepository>();
         services.AddScoped<IApplicationClientCredentialRepository, ApplicationClientCredentialRepository>();
         services.AddSingleton<IClientSecretGenerator, ClientSecretGenerator>();
 

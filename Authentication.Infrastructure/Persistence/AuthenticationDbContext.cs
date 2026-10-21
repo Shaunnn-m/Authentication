@@ -16,6 +16,9 @@ public class AuthenticationDbContext
     public DbSet<Domain.Applications.Application> Applications =>
     Set<Domain.Applications.Application>();
 
+    public DbSet<ApplicationSettings> ApplicationSettings =>
+        Set<ApplicationSettings>();
+
     public DbSet<ApplicationClientCredential> ApplicationClientCredentials
     => Set<ApplicationClientCredential>();
     public AuthenticationDbContext(

@@ -18,17 +18,20 @@ public sealed class RegisterApplicationCommandHandler
 {
     private readonly IApplicationRepository _applicationRepository;
     private readonly ICurrentUser _currentUserService;
+    private readonly IApplicationSettingsRepository _applicationSettingsRepository;
     private readonly IApplicationClientCredentialRepository _clientCredentialRepository;
     private readonly IClientSecretGenerator _clientSecretGenerator;
 
     public RegisterApplicationCommandHandler(
         IApplicationRepository applicationRepository,
         ICurrentUser currentUserService,
+        IApplicationSettingsRepository applicationSettingsRepository,
         IApplicationClientCredentialRepository clientCredentialRepository,
         IClientSecretGenerator clientSecretGenerator)
     {
         _applicationRepository = applicationRepository;
         _currentUserService = currentUserService;
+        _applicationSettingsRepository = applicationSettingsRepository;
         _clientCredentialRepository = clientCredentialRepository;
         _clientSecretGenerator = clientSecretGenerator;
     }
@@ -55,6 +58,16 @@ public sealed class RegisterApplicationCommandHandler
 
         await _applicationRepository.AddAsync(
             application,
+            cancellationToken);
+
+        var applicationSettings = ApplicationSettings.Create(
+            application.Id,
+            request.Settings?.EnableEmailVerification ?? true,
+            request.Settings?.EmailHandlingMode ??
+                EmailHandlingMode.PlatformManaged);
+
+        await _applicationSettingsRepository.AddAsync(
+            applicationSettings,
             cancellationToken);
 
         string? clientSecret = null;

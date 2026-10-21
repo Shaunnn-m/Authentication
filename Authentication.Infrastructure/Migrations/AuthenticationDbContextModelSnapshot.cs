@@ -100,6 +100,25 @@ namespace Authentication.Infrastructure.Migrations
                     b.ToTable("ApplicationClientCredentials", (string)null);
                 });
 
+            modelBuilder.Entity("Authentication.Domain.Applications.ApplicationSettings", b =>
+                {
+                    b.Property<Guid>("ApplicationId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("EmailHandlingMode")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsEmailVerificationEnabled")
+                        .HasColumnType("bit");
+
+                    b.HasKey("ApplicationId");
+
+                    b.ToTable("ApplicationSettings", (string)null);
+                });
+
             modelBuilder.Entity("Authentication.Domain.Entities.RefreshToken", b =>
                 {
                     b.Property<Guid>("Id")
@@ -349,6 +368,15 @@ namespace Authentication.Infrastructure.Migrations
                     b.HasOne("Authentication.Domain.Applications.Application", null)
                         .WithMany()
                         .HasForeignKey("ApplicationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Authentication.Domain.Applications.ApplicationSettings", b =>
+                {
+                    b.HasOne("Authentication.Domain.Applications.Application", null)
+                        .WithOne()
+                        .HasForeignKey("Authentication.Domain.Applications.ApplicationSettings", "ApplicationId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
