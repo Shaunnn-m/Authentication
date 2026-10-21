@@ -7,7 +7,6 @@ public interface IRefreshTokenService
 {
     Task<Result<string>> CreateAsync(
         Guid userId,
-        Guid? applicationId = null,
         CancellationToken cancellationToken = default);
 
     Task<Result<RefreshTokenValidationResult>> ValidateAsync(

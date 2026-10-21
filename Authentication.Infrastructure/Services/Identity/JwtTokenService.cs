@@ -20,9 +20,7 @@ public class JwtTokenService : ITokenService
     public AccessTokenResult GenerateAccessToken(
         Guid userId,
         string email,
-        IEnumerable<string> roles,
-        Guid? applicationId = null
-        )
+        IEnumerable<string> roles)
     {
         var claims = new List<Claim>
         {
@@ -31,13 +29,6 @@ public class JwtTokenService : ITokenService
             new(ClaimTypes.NameIdentifier, userId.ToString()),
             new(ClaimTypes.Email, email)
         };
-
-        if (applicationId.HasValue)
-        {
-            claims.Add(new Claim(
-                "application_id",
-                applicationId.Value.ToString()));
-        }
 
         claims.AddRange(
             roles.Select(role => new Claim(ClaimTypes.Role, role)));

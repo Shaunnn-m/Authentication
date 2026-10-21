@@ -1,7 +1,7 @@
 using Authentication.Application.Common.Messages;
 using Authentication.Application.Common.Results;
-using Authentication.Application.Interfaces.Application;
 using Authentication.Application.Interfaces.Applications;
+using Authentication.Application.Interfaces.Identity;
 using MediatR;
 
 namespace Authentication.Application.Features.Application.DeactivateApplication;
@@ -10,34 +10,32 @@ public sealed class DeactivateApplicationCommandHandler
     : IRequestHandler<DeactivateApplicationCommand, Result<Guid>>
 {
     private readonly IApplicationRepository _applicationRepository;
-    private readonly ICurrentApplicationService _currentApplicationService;
+    private readonly ICurrentUser _currentUser;
 
     public DeactivateApplicationCommandHandler(
         IApplicationRepository applicationRepository,
-        ICurrentApplicationService currentApplicationService)
+        ICurrentUser currentUser)
     {
         _applicationRepository = applicationRepository;
-        _currentApplicationService = currentApplicationService;
+        _currentUser = currentUser;
     }
 
     public async Task<Result<Guid>> Handle(
         DeactivateApplicationCommand request,
         CancellationToken cancellationToken)
     {
-        var applicationId = _currentApplicationService.ApplicationId;
-
-        if (!applicationId.HasValue || applicationId.Value == Guid.Empty)
-        {
-            return Result<Guid>.Failure(ApplicationMessages.ContextRequired);
-        }
-
         var application = await _applicationRepository.GetByAppplicationId(
-            applicationId.Value,
+            request.ApplicationId,
             cancellationToken);
 
         if (application is null)
         {
             return Result<Guid>.Failure(ApplicationMessages.NotFound);
+        }
+
+        if (_currentUser.UserId != application.CreatedByUserId)
+        {
+            return Result<Guid>.Failure(ApplicationMessages.CreatorOnly);
         }
 
         if (!application.IsActive)

@@ -100,113 +100,10 @@ namespace Authentication.Infrastructure.Migrations
                     b.ToTable("ApplicationClientCredentials", (string)null);
                 });
 
-            modelBuilder.Entity("Authentication.Domain.Applications.ApplicationRole", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("ApplicationId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ApplicationId", "Name")
-                        .IsUnique();
-
-                    b.ToTable("ApplicationRoles", (string)null);
-                });
-
-            modelBuilder.Entity("Authentication.Domain.Applications.ApplicationSettings", b =>
-                {
-                    b.Property<Guid>("ApplicationId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("EmailHandlingMode")
-                        .HasColumnType("int");
-
-                    b.Property<bool>("IsEmailVerificationEnabled")
-                        .HasColumnType("bit");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("ApplicationId");
-
-                    b.ToTable("ApplicationSettings", (string)null);
-                });
-
-            modelBuilder.Entity("Authentication.Domain.Applications.ApplicationUserAccess", b =>
-                {
-                    b.Property<Guid>("ApplicationId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("bit");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("ApplicationId", "UserId");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("ApplicationUserAccess", (string)null);
-                });
-
-            modelBuilder.Entity("Authentication.Domain.Applications.ApplicationUserRole", b =>
-                {
-                    b.Property<Guid>("ApplicationId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("RoleId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("ApplicationId", "UserId", "RoleId");
-
-                    b.HasIndex("RoleId");
-
-                    b.HasIndex("UserId", "RoleId");
-
-                    b.ToTable("ApplicationUserRoles", (string)null);
-                });
-
             modelBuilder.Entity("Authentication.Domain.Entities.RefreshToken", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid?>("ApplicationId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime>("CreatedAt")
@@ -453,45 +350,6 @@ namespace Authentication.Infrastructure.Migrations
                         .WithMany()
                         .HasForeignKey("ApplicationId")
                         .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("Authentication.Domain.Applications.ApplicationRole", b =>
-                {
-                    b.HasOne("Authentication.Domain.Applications.Application", null)
-                        .WithMany()
-                        .HasForeignKey("ApplicationId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("Authentication.Domain.Applications.ApplicationSettings", b =>
-                {
-                    b.HasOne("Authentication.Domain.Applications.Application", null)
-                        .WithOne()
-                        .HasForeignKey("Authentication.Domain.Applications.ApplicationSettings", "ApplicationId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("Authentication.Domain.Applications.ApplicationUserRole", b =>
-                {
-                    b.HasOne("Authentication.Domain.Applications.Application", null)
-                        .WithMany()
-                        .HasForeignKey("ApplicationId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("Authentication.Domain.Applications.ApplicationRole", null)
-                        .WithMany()
-                        .HasForeignKey("RoleId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("Authentication.Infrastructure.Identity.ApplicationUser", null)
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
                 });
 

@@ -12,7 +12,6 @@ public interface IPasswordService
 
     Task<Result<PasswordResetResult?>> RequestAsync(
         string email,
-        Guid? applicationId = null,
         CancellationToken cancellationToken = default);
 
     Task<Result<string>> GenerateResetTokenAsync(

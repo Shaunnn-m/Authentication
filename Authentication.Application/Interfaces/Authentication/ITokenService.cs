@@ -7,6 +7,5 @@ public interface ITokenService
     AccessTokenResult  GenerateAccessToken(
         Guid userId,
         string email,
-        IEnumerable<string> roles,
-        Guid? applicationId = null);
+        IEnumerable<string> roles);
 }

@@ -4,6 +4,5 @@ using MediatR;
 namespace Authentication.Application.Features.Authentication.ResendEmailConfirmation;
 
 public sealed record ResendEmailConfirmationCommand(
-    Guid ApplicationId,
     string Email)
     : IRequest<Result<ResendEmailConfirmationResponse>>;

@@ -70,15 +70,8 @@ public static class DependencyInjection
         services.AddScoped<IEmailTemplateService, EmailTemplateService>();
         services.AddScoped<IPasswordService, PasswordService>();
         services.AddScoped<IAdminUserService, AdminUserService>();
-        services.AddScoped<IApplicationUserAccessRepository, ApplicationUserAccessRepository>();
-        services.AddScoped<
-            IApplicationUserRoleRepository,
-            ApplicationUserRoleRepository>();
         services.AddScoped<IApplicationRepository, ApplicationRepository>();
         services.AddScoped<IUnitOfWork, UnitOfWork>();
-        services.AddScoped<IApplicationRoleRepository, ApplicationRoleRepository>();
-        services.AddScoped<IApplicationSettingsRepository, ApplicationSettingsRepository>();
-        services.AddScoped<ICurrentApplicationService, CurrentApplicationService>();
         services.AddScoped<IApplicationClientCredentialRepository, ApplicationClientCredentialRepository>();
         services.AddSingleton<IClientSecretGenerator, ClientSecretGenerator>();
 

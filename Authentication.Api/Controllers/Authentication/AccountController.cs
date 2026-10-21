@@ -12,7 +12,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Authentication.Api.Controllers.Authentication;
 
-[Authorize(Policy = "ApplicationAccess")]
+[Authorize]
 [ApiController]
 [Route("api/account")]
 public sealed class AccountController : ControllerBase

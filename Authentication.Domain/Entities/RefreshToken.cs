@@ -12,8 +12,6 @@ public class RefreshToken : BaseEntity
 
     public DateTime? RevokedAt { get; private set; }
 
-    public Guid? ApplicationId { get; private set; }
-
     public bool IsRevoked => RevokedAt.HasValue;
 
     public bool IsExpired => DateTime.UtcNow >= ExpiresAt;
@@ -27,19 +25,16 @@ public class RefreshToken : BaseEntity
 
     private RefreshToken(
         Guid userId,
-        Guid? applicationId,
         string tokenHash,
         DateTime expiresAt)
     {
         UserId = userId;
-        ApplicationId = applicationId;
         TokenHash = tokenHash;
         ExpiresAt = expiresAt;
     }
 
     public static RefreshToken Create(
         Guid userId,
-        Guid? applicationId,
         string tokenHash,
         DateTime expiresAt)
     {
@@ -47,11 +42,6 @@ public class RefreshToken : BaseEntity
             throw new ArgumentException(
                 "User ID is required.",
                 nameof(userId));
-
-        if (applicationId == Guid.Empty)
-            throw new ArgumentException(
-                "Application ID cannot be empty.",
-                nameof(applicationId));
 
         if (string.IsNullOrWhiteSpace(tokenHash))
             throw new ArgumentException(
@@ -65,7 +55,6 @@ public class RefreshToken : BaseEntity
 
         return new RefreshToken(
             userId,
-            applicationId,
             tokenHash,
             expiresAt);
     }

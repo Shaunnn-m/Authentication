@@ -3,12 +3,10 @@ using Authentication.Application.Abstractions.Email;
 using Authentication.Application.Abstractions.Results.Email;
 using Authentication.Application.Common.Messages;
 using Authentication.Application.Common.Results;
-using Authentication.Application.Interfaces.Application;
 using Authentication.Application.Interfaces.Authentication;
 using Authentication.Application.Interfaces.Email;
 using Authentication.Application.Interfaces.Identity;
 using Authentication.Domain.Applications;
-using Authentication.Domain.Enums;
 using Authentication.Infrastructure.Identity;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
@@ -20,8 +18,6 @@ namespace Authentication.Infrastructure.Services.Email
     {
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IUserService _userService;
-
-        private readonly IApplicationSettingsRepository _applicationSettingsRepository;
 
         private readonly SmtpEmailService _smtpEmailService;
         private readonly IEmailTemplateService _emailTemplateService;
@@ -37,7 +33,6 @@ namespace Authentication.Infrastructure.Services.Email
             IEmailTemplateService emailTemplateService,
             IRefreshTokenService refreshTokenService,
             SmtpEmailService smtpEmailService,
-            IApplicationSettingsRepository applicationSettingsRepository,
             ILogger<EmailService> logger)
         {
             _userManager = userManager;
@@ -46,7 +41,6 @@ namespace Authentication.Infrastructure.Services.Email
             _emailTemplateService = emailTemplateService;
             _refreshTokenService = refreshTokenService;
             _smtpEmailService = smtpEmailService;
-            _applicationSettingsRepository = applicationSettingsRepository;
             _logger = logger;
         }
 
@@ -63,25 +57,8 @@ namespace Authentication.Infrastructure.Services.Email
          Guid userId,
          string firstName,
          string email,
-         Guid? applicationId = null,
          CancellationToken cancellationToken = default)
         {
-            ApplicationSettings? applicationSettings = null;
-
-            if (applicationId.HasValue)
-            {
-                applicationSettings =
-                    await _applicationSettingsRepository.GetByApplicationIdAsync(
-                        applicationId.Value,
-                        cancellationToken);
-
-                if (applicationSettings is null)
-                {
-                    return Result<EmailConfirmationResult?>.Failure(
-                        ApplicationMessages.SettingsNotFound);
-                }
-            }
-
             var tokenResult =
                 await _userService.GenerateEmailConfirmationTokenAsync(
                     userId,
@@ -104,25 +81,16 @@ namespace Authentication.Infrastructure.Services.Email
                 tokenResult.Value!,
                 confirmationLink);
 
-            // No ApplicationId means platform-managed email.
-            var platformManaged =
-                applicationSettings is null ||
-                applicationSettings.EmailHandlingMode ==
-                    EmailHandlingMode.PlatformManaged;
+            var body = _emailTemplateService.RenderRegistrationConfirmation(
+                firstName,
+                confirmationLink);
 
-            if (platformManaged)
-            {
-                var body = _emailTemplateService.RenderRegistrationConfirmation(
-                    firstName,
-                    confirmationLink);
+            var emailMessage = new EmailMessage(
+                email,
+                "Confirm your account",
+                body);
 
-                var emailMessage = new EmailMessage(
-                    email,
-                    "Confirm your account",
-                    body);
-
-                await SendAsync(emailMessage, cancellationToken);
-            }
+            await SendAsync(emailMessage, cancellationToken);
 
             return Result<EmailConfirmationResult?>.Success(
                 confirmationResult);
@@ -131,25 +99,8 @@ namespace Authentication.Infrastructure.Services.Email
         public async Task<Result<EmailChangeResult?>> RequestChangeAsync(
         Guid userId,
         string newEmail,
-        Guid? applicationId = null,
         CancellationToken cancellationToken = default)
         {
-            ApplicationSettings? applicationSettings = null;
-
-            if (applicationId.HasValue)
-            {
-                applicationSettings =
-                    await _applicationSettingsRepository.GetByApplicationIdAsync(
-                        applicationId.Value,
-                        cancellationToken);
-
-                if (applicationSettings is null)
-                {
-                    return Result<EmailChangeResult?>.Failure(
-                        ApplicationMessages.SettingsNotFound);
-                }
-            }
-
             var user = await _userManager.FindByIdAsync(userId.ToString());
 
             if (user is null)
@@ -191,26 +142,17 @@ namespace Authentication.Infrastructure.Services.Email
                 newEmail,
                 link);
 
-            // No ApplicationId means platform-managed email.
-            var platformManaged =
-                applicationSettings is null ||
-                applicationSettings.EmailHandlingMode ==
-                    EmailHandlingMode.PlatformManaged;
+            var body = _emailTemplateService.RenderEmailChange(
+                user.FirstName,
+                newEmail,
+                link);
 
-            if (platformManaged)
-            {
-                var body = _emailTemplateService.RenderEmailChange(
-                    user.FirstName,
-                    newEmail,
-                    link);
+            var emailMessage = new EmailMessage(
+                newEmail,
+                "Confirm your email change",
+                body);
 
-                var emailMessage = new EmailMessage(
-                    newEmail,
-                    "Confirm your email change",
-                    body);
-
-                await SendAsync(emailMessage, cancellationToken);
-            }
+            await SendAsync(emailMessage, cancellationToken);
 
             return Result<EmailChangeResult?>.Success(emailChangeResult);
         }

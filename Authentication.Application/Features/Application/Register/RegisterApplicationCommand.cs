@@ -7,12 +7,5 @@ namespace Authentication.Application.Features.Application.Register;
 
 public sealed record RegisterApplicationCommand(
     string Name,
-    ApplicationClientType ClientType,
-    RegisterApplicationSettingsRequest? Settings = null)
+    ApplicationClientType ClientType)
     : IRequest<Result<RegisterApplicationResponse>>, IUnitOfWorkCommand;
-
-public sealed record RegisterApplicationSettingsRequest
-{
-    public EmailHandlingMode? EmailHandlingMode { get; init; }
-    public bool? EnableEmailVerification { get; init; }
-}

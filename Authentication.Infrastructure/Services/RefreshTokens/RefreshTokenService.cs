@@ -26,7 +26,6 @@ public class RefreshTokenService : IRefreshTokenService
 
     public async Task<Result<string>> CreateAsync(
         Guid userId,
-        Guid? applicationId = null,
         CancellationToken cancellationToken = default)
     {
         var tokenBytes = RandomNumberGenerator.GetBytes(64);
@@ -38,7 +37,6 @@ public class RefreshTokenService : IRefreshTokenService
 
         var refreshToken = RefreshToken.Create(
             userId,
-            applicationId,
             tokenHash,
             DateTime.UtcNow.AddDays(7));
 
@@ -87,8 +85,7 @@ public class RefreshTokenService : IRefreshTokenService
         }
 
         return Result<RefreshTokenValidationResult>.Success(
-           new RefreshTokenValidationResult(token.UserId,
-            token.ApplicationId));
+            new RefreshTokenValidationResult(token.UserId));
     }
 
     public async Task RevokeAsync(

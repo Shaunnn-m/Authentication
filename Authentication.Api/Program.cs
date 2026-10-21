@@ -1,4 +1,3 @@
-using Authentication.Api.Common.Authorization;
 using Authentication.Api.Common.Identity;
 using Authentication.Api.Extentions.Exceptions;
 using Authentication.Application;
@@ -39,12 +38,6 @@ builder.Host.UseSerilog(
 
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
-builder.Services.AddScoped<
-    IAuthorizationHandler,
-    ApplicationAccessHandler>();
-builder.Services.AddScoped<
-    IAuthorizationHandler,
-    ApplicationAdminHandler>();
 builder.Services
     .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
@@ -129,23 +122,7 @@ builder.Services.AddRateLimiter(options =>
             }));
 });
 
-builder.Services.AddAuthorization(options =>
-{
-    options.AddPolicy(
-        "ApplicationAccess",
-        policy =>
-        {
-            policy.RequireAuthenticatedUser();
-            policy.AddRequirements(
-                new ApplicationAccessRequirement());
-        });
-
-    options.AddPolicy("ApplicationAdmin", policy =>
-    {
-        policy.RequireAuthenticatedUser();
-        policy.AddRequirements(new ApplicationAdminRequirement());
-    });
-});
+builder.Services.AddAuthorization();
 
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddProblemDetails();

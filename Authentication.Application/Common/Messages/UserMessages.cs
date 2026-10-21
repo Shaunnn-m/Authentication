@@ -55,12 +55,6 @@ public static class UserMessages
             ErrorType.Validation);
     }
 
-    public static readonly ResultError InvalidApplicationAccess =
-        new(
-            "User.InvalidApplicationAccess",
-            "User does not have access to this application.",
-            ErrorType.Validation);
-
     public static readonly ResultError AuthenticationRequired =
         new(
             "User.AuthenticationRequired",

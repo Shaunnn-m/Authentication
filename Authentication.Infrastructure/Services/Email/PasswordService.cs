@@ -2,12 +2,10 @@ using Authentication.Application.Abstractions.Email;
 using Authentication.Application.Abstractions.Results;
 using Authentication.Application.Common.Messages;
 using Authentication.Application.Common.Results;
-using Authentication.Application.Interfaces.Application;
 using Authentication.Application.Interfaces.Authentication;
 using Authentication.Application.Interfaces.Email;
 using Authentication.Application.Interfaces.Identity;
 using Authentication.Infrastructure.Identity;
-using Authentication.Domain.Enums;
 using Microsoft.AspNetCore.Identity;
 
 namespace Authentication.Infrastructure.Services.Identity;
@@ -19,7 +17,6 @@ public sealed class PasswordService : IPasswordService
     private readonly IEmailService _emailService;
     private readonly IEmailTemplateService _emailTemplateService;
     private readonly IRefreshTokenService _refreshTokenService;
-    private readonly IApplicationSettingsRepository _applicationSettingsRepository;
     private readonly UserManager<ApplicationUser> _userManager;
 
     public PasswordService(
@@ -28,7 +25,6 @@ public sealed class PasswordService : IPasswordService
         IEmailService emailService,
         IEmailTemplateService emailTemplateService,
         IRefreshTokenService refreshTokenService,
-        IApplicationSettingsRepository applicationSettingsRepository,
         UserManager<ApplicationUser> userManager)
     {
         _userService = userService;
@@ -36,7 +32,6 @@ public sealed class PasswordService : IPasswordService
         _emailService = emailService;
         _emailTemplateService = emailTemplateService;
         _refreshTokenService = refreshTokenService;
-        _applicationSettingsRepository = applicationSettingsRepository;
         _userManager = userManager;
     }
 
@@ -66,27 +61,8 @@ public sealed class PasswordService : IPasswordService
 
     public async Task<Result<PasswordResetResult?>> RequestAsync(
         string email,
-        Guid? applicationId = null,
         CancellationToken cancellationToken = default)
     {
-        var emailHandlingMode = EmailHandlingMode.PlatformManaged;
-
-        if (applicationId.HasValue)
-        {
-            var settings =
-                await _applicationSettingsRepository.GetByApplicationIdAsync(
-                    applicationId.Value,
-                    cancellationToken);
-
-            if (settings is null)
-            {
-                return Result<PasswordResetResult?>.Failure(
-                    ApplicationMessages.SettingsNotFound);
-            }
-
-            emailHandlingMode = settings.EmailHandlingMode;
-        }
-
         var userResult = await _userService.GetByEmailAsync(
             email,
             cancellationToken);
@@ -117,31 +93,17 @@ public sealed class PasswordService : IPasswordService
             userResult.Value.UserId,
             token);
 
-        var result = new PasswordResetResult(
-            userResult.Value.UserId,
-            userResult.Value.Email,
+        var body = _emailTemplateService.RenderPasswordReset(
             userResult.Value.FirstName,
             resetLink);
 
-        if (emailHandlingMode == EmailHandlingMode.PlatformManaged)
-        {
-            var body = _emailTemplateService.RenderPasswordReset(
-                result.FirstName,
-                result.PasswordResetLink);
+        var emailMessage = new EmailMessage(
+            userResult.Value.Email,
+            "Reset your password",
+            body);
 
-            var emailMessage = new EmailMessage(
-                result.Email,
-                "Reset your password",
-                body);
-
-            await _emailService.SendAsync(
-                emailMessage,
-                cancellationToken);
-
-            return Result<PasswordResetResult?>.Success(null);
-        }
-
-        return Result<PasswordResetResult?>.Success(result);
+        await _emailService.SendAsync(emailMessage, cancellationToken);
+        return Result<PasswordResetResult?>.Success(null);
     }
 
     public async Task<Result<string>> GenerateResetTokenAsync(
